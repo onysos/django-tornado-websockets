@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-tornado-websockets',
-    version='0.0.1',
+    version='0.0.2',
     description="Simple way to use WebSockets for Django with Tornado",
     long_description=README,
     author='Hugo ALLIAUME',
@@ -23,7 +23,7 @@ setup(
     include_package_data=True,
     license='GPLv3 License',
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',
         'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.9',
