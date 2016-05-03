@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
-from testapp.websockets import WebSocketChat
+import django.core.handlers.wsgi
+import tornado.wsgi
+
+import testapp.websockets
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -38,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'tornado_websockets'
+    'testapp',
+    'tornado_websockets',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -52,12 +56,12 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'tornado_websockets.urls'
+ROOT_URLCONF = 'testapp.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -117,14 +121,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Tornado configuration
+django_app = tornado.wsgi.WSGIContainer(django.core.handlers.wsgi.WSGIHandler())
 TORNADO = {
     # 'port': 8080,
-    'handlers': {
-        '/ws/chat': WebSocketChat,
-    },
+    'handlers': [
+        ('/ws/chat', testapp.websockets.WebSocketChat),
+        # Must not be used as long Nginx or Apache should serve static files
+        (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static'}),
+        ('.*', tornado.web.FallbackHandler, dict(fallback=django_app))
+    ],
     'settings': {
         'autoreload': True
     }
 }
+
