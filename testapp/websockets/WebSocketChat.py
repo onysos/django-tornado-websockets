@@ -2,10 +2,15 @@ from tornado_websockets.WebSocket import WebSocket
 
 
 class WebSocketChat(WebSocket):
-    @WebSocket.on('connection')
-    def on_connection(self, data):
-        pass
+    def run(self):
+        @self.on
+        def connection(data):
+            self.emit('connection', {
+                'message': 'Someone join the chat'
+            })
 
-    @WebSocket.on('foo')
-    def on_foo(self, data):
-        pass
+        @self.on
+        def close(data):
+            self.emit('close', {
+                'message': 'Someone leave the chat'
+            })
