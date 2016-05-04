@@ -10,39 +10,40 @@
 
 <ul id="messages"></ul>
 
+{% load tornado_websocket %}
 <script>
-    var ws = new WebSocket("ws://127.0.0.1:8000/ws/chat");
+    var ws = new TornadoWebSocket(/* ... */);
+    var $messages = document.querySelector('#messages');
     var $form = document.querySelector('form[name="send"]');
-    var $msg = document.querySelector('#msg');
-    var $messages = document.querySelector('#messages')
 
-    ws.onopen = function () {
-        ws.send(JSON.stringify({event: 'connection'}));
+    ws.emit('connection'); // or during new TornadoWebSocket?
 
-        $form.addEventListener('submit', function (e) {
-            e.preventDefault();
+    function send_message(ws, message) {
+        ws.emit('message', {
+            message: message
+        });
+    }
 
-            ws.send(JSON.stringify({
-                event: 'message',
-                data: {
-                    message: $msg.value
-                }
-            }));
+    ws.on('connection', function () {
+        send_message(ws, 'I just joined the web chat');
+    });
 
-            $msg.value = ''
-        }, false);
-    };
-
-    ws.onmessage = function (evt) {
-        data = JSON.parse(evt.data).data;
-
-        console.log("Response from server: " + evt.data);
-
+    ws.on('message', function (data) {
         var $li = document.createElement('li');
-        $li.textContent = data.message
+        $li.textContent = data.message;
+        $messages.appendChild($li);
+    });
 
-        $messages.appendChild($li)
-    };
+    ws.on('close', function () {
+        send_message(ws, 'I leave the webchat');
+        this.disconnect();
+    });
+
+    $form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        send_message(ws, $msg.value);
+        $msg.value = '';
+    }, false);
 
 </script>
 </body>
