@@ -1,3 +1,5 @@
+import inspect
+
 import tornado.escape
 import tornado.websocket
 
@@ -42,11 +44,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         """
 
         def decorator(func):
-            def wrapper(self, *args, **kwargs):
-                print('wrapper(): %s, %s' % (str(*args), str(**kwargs)))
-                return func(self, *args, **kwargs)
-
-            return wrapper
+            return func
 
         if len(args) == 0:
             raise ValueError("WebSocket.on decorator should have at least one argument")
@@ -61,12 +59,14 @@ class WebSocket(tornado.websocket.WebSocketHandler):
             callback = decorator(args[0])
 
         self._events[event] = callback
-        print('events: %s' % str(self._events))
 
         return callback
 
     def emit(self, event, data):
-        print('-- WebSocket.emit(%s, %s)' % (event, data))
+        print('.. WebSocket.emit(%s, %s)' % (event, data))
+
+        if not isinstance(data, dict):
+            data = {'message': data}
 
         message = {
             'event': event,
@@ -84,12 +84,24 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         try:
             message = tornado.escape.json_decode(message)
             event = message.get('event', 'message')
-            data = message.get('data', {})
+            data = message.get('data', None)
         except ValueError:  # It's a JSON
             event = 'message'
             data = {'message': message}
 
         if not self._events.get(event):
-            print('-- Warning: %s event is not implemented' % event)
-        else:
-            self._events[event](data)
+            msg = 'Event "%s" is not implemented' % event
+
+            print('-- Warning: %s' % msg)
+            self.emit('error', {
+                'message': msg
+            })
+
+            return
+
+        spec = inspect.getargspec(self._events[event])
+
+        if not spec.args:
+            return self._events[event]()
+
+        return self._events[event](data)

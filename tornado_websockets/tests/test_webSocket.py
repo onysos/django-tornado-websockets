@@ -24,6 +24,11 @@ class TestWebSocket(TestCase):
         self.ws1 = websocket.create_connection('ws://127.0.0.1:8000/ws/test/first', timeout=self.timeout)
         self.ws2 = websocket.create_connection('ws://127.0.0.1:8000/ws/test/second', timeout=self.timeout)
 
+        with self.assertRaises(websocket.WebSocketBadStatusException) as ex:
+            websocket.create_connection('ws://127.0.0.1:8000/ws/i/am/not/in/handlers', timeout=self.timeout)
+
+        self.assertEqual(str(ex.exception), 'Handshake status 404')
+
     def test_connection(self):
         self.assertEqual(self.ws1.getstatus(), 101)
         self.assertEqual(self.ws2.getstatus(), 101)
@@ -31,13 +36,23 @@ class TestWebSocket(TestCase):
     def test_on_connection(self):
         self.ws1.send(toJson({
             'event': 'connection',
-            'data': {}
         }))
 
-        res = fromJson(self.ws1.recv())
-        self.assertDictEqual(res, {
-            'event': 'got_connection',
+        self.ws2.send(toJson({
+            'event': 'connection',
+        }))
+
+        self.assertDictEqual(fromJson(self.ws1.recv()), {
+            'event': 'connection',
             'data': {
-                'message': 'I got a new connection!'
+                'message': 'New connection'
             }
         })
+
+        self.assertDictEqual(fromJson(self.ws2.recv()), {
+            'event': 'error',
+            'data': {
+                'message': 'Event "connection" is not implemented'
+            }
+        })
+
