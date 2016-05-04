@@ -72,7 +72,7 @@ class Command(BaseCommand):
         self.stdout.write('== Using settings:\n')
         pp.pprint(tornado_settings)
 
-        tornado_app = tornado.web.Application(tornado_handlers)
+        tornado_app = tornado.web.Application(tornado_handlers, **tornado_settings)
         server = tornado.httpserver.HTTPServer(tornado_app)
         server.listen(tornado_port)
 

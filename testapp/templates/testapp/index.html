@@ -9,19 +9,27 @@
 </form>
 
 <script>
-       var ws = new WebSocket("ws://127.0.0.1:8000/ws/chat");
-       var $form = document.querySelector('form[name="send"]');
-       var $msg = document.querySelector('input#msg');
-       ws.onopen = function() {
-          ws.send("Hello, world");
-          $form.addEventListener('submit', function(e) {
+    var ws = new WebSocket("ws://127.0.0.1:8000/ws/chat");
+    var $form = document.querySelector('form[name="send"]');
+    var $msg = document.querySelector('input#msg');
+
+    ws.onopen = function() {
+        ws.send(JSON.stringify({event: 'connection'}));
+
+        $form.addEventListener('submit', function(e) {
             e.preventDefault();
-            ws.send($msg.value);
-          }, false);
-       };
-       ws.onmessage = function (evt) {
-          alert("Response from server: " + evt.data);
-       };
+
+            ws.send(JSON.stringify({
+                event: 'message',
+                data: {
+                    message: $msg.value
+                }
+            }));
+        }, false);
+    };
+    ws.onmessage = function (evt) {
+        alert("Response from server: " + evt.data);
+    };
 
 </script>
 </body>
