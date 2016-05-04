@@ -12,12 +12,10 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
-import django.core.handlers.wsgi
-import tornado.wsgi
-
-import testapp.websockets
+import tornado_websockets.tests
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Quick-start development settings - unsuitable for production
@@ -124,14 +122,14 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Tornado configuration
-django_app = tornado.wsgi.WSGIContainer(django.core.handlers.wsgi.WSGIHandler())
 TORNADO = {
     # 'port': 8080,
     'handlers': [
-        ('/ws/chat', testapp.websockets.WebSocketChat),
+        ('/ws/test/first', tornado_websockets.tests.WebSocketFirstTest),
+        ('/ws/test/second', tornado_websockets.tests.WebSocketSecondTest),
         # Must not be used as long Nginx or Apache should serve static files
-        (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static'}),
-        ('.*', tornado.web.FallbackHandler, dict(fallback=django_app))
+        tornado_websockets.static_app,
+        tornado_websockets.django_app
     ],
     'settings': {
         'autoreload': True
