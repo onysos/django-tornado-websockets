@@ -11,7 +11,7 @@ class WebSocketChat(WebSocket):
 
         @self.on
         def message(data):
-            self.emit('message', 'Someone said: %s' % data.get('message'))
+            self.emit('message', data.get('message'))
 
         @self.on
         def close():

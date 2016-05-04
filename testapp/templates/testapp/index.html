@@ -4,19 +4,22 @@
 <h1>Hello from tornado!</h1>
 
 <form name="send">
-    <input id="msg">
+    <textarea id="msg"></textarea>
     <input type="submit" value="Send">
 </form>
+
+<ul id="messages"></ul>
 
 <script>
     var ws = new WebSocket("ws://127.0.0.1:8000/ws/chat");
     var $form = document.querySelector('form[name="send"]');
-    var $msg = document.querySelector('input#msg');
+    var $msg = document.querySelector('#msg');
+    var $messages = document.querySelector('#messages')
 
-    ws.onopen = function() {
+    ws.onopen = function () {
         ws.send(JSON.stringify({event: 'connection'}));
 
-        $form.addEventListener('submit', function(e) {
+        $form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             ws.send(JSON.stringify({
@@ -25,10 +28,20 @@
                     message: $msg.value
                 }
             }));
+
+            $msg.value = ''
         }, false);
     };
+
     ws.onmessage = function (evt) {
-        alert("Response from server: " + evt.data);
+        data = JSON.parse(evt.data).data;
+
+        console.log("Response from server: " + evt.data);
+
+        var $li = document.createElement('li');
+        $li.textContent = data.message
+
+        $messages.appendChild($li)
     };
 
 </script>

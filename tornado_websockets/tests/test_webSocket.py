@@ -82,6 +82,7 @@ class TestWebSocket(TestCase):
                     'value': counter
                 }
             })
+
             self.assertEqual(counter, data.get('data').get('value'))
 
 
