@@ -56,3 +56,32 @@ class TestWebSocket(TestCase):
             }
         })
 
+    def test_on_increment_counter(self):
+        counter = 0
+        data = {}
+
+        self.ws1.send(toJson({
+            'event': 'setup_counter',
+            'data': {
+                'value': counter
+            }
+        }))
+
+        while counter < 100:
+            counter += 1
+
+            self.ws1.send(toJson({
+                'event': 'increment_counter'
+            }))
+
+            data = fromJson(self.ws1.recv())
+
+            self.assertDictEqual(data, {
+                'event': 'incremented_counter',
+                'data': {
+                    'value': counter
+                }
+            })
+            self.assertEqual(counter, data.get('data').get('value'))
+
+
