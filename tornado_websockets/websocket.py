@@ -2,20 +2,21 @@ import inspect
 
 from six import string_types
 
-from .TornadoWrapper import TornadoWrapper
-from .WebSocketHandler import WebSocketHandler
-from .exceptions import *
+from tornado_websockets.exceptions import *
+from tornado_websockets.wrappers.tornado import TornadoWrapper
+from tornado_websockets.wrappers.websockethandler import WebSocketHandlerWrapper
 
 
 class WebSocket(object):
     def __init__(self, namespace):
         self.events = {}
+        self.context = None
 
         self._namespace = namespace.strip()
         if self._namespace[0:1] is not '/':
             self._namespace = '/' + self._namespace
 
-        self._handler = WebSocketHandler
+        self._handler = WebSocketHandlerWrapper
         self._handler.namespaces.update({
             self._namespace: self
         })

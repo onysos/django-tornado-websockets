@@ -5,7 +5,12 @@ import tornado.websocket
 
 
 class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
+    instance = None
     namespaces = {}
+
+    def initialize(self):
+        print('SELF: %s' % self)
+        WebSocketHandlerWrapper.instance = self
 
     def on_message(self, message):
         print('MESSAGE: %s' % message)

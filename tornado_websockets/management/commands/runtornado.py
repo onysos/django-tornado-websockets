@@ -9,12 +9,11 @@ import django.core.handlers.wsgi
 import tornado.ioloop
 import tornado.web
 import tornado.wsgi
+from django.apps import AppConfig
 from django.conf import settings
 from django.core.management import BaseCommand
-from django.apps import AppConfig
 
-
-from tornado_websockets.TornadoWrapper import TornadoWrapper
+from tornado_websockets.wrappers.tornado import TornadoWrapper
 
 if django.VERSION[1] > 5:
     django.setup()

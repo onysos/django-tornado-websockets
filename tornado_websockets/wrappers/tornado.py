@@ -6,7 +6,6 @@ import tornado.web
 
 pp = pprint.PrettyPrinter(indent=4)
 
-
 class TornadoWrapper:
     tornado_app = None
     tornado_server = None

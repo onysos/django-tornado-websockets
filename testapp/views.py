@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 
-from tornado_websockets.WebSocket import WebSocket
+from tornado_websockets.websocket import WebSocket
 
 ws_chat = WebSocket('/chat')
 

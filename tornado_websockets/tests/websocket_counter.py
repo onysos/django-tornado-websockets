@@ -3,9 +3,10 @@ from tornado_websockets.WebSocket import WebSocket
 ws_first = WebSocket('/test')
 
 
-class WSTest(object):
+class WebSocketFirst(object):
     def __init__(self):
         self.counter = None
+        ws_first.context = self
 
     @ws_first.on
     def connection(self):
@@ -28,7 +29,3 @@ class WSTest(object):
     @ws_first.on
     def close(self):
         print('-- WebSocket is closed')
-
-
-class WebSocketSecondTest(object):
-    pass
