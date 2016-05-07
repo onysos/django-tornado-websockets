@@ -18,6 +18,8 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="tornado.web" />
+          <option value="py6" />
+          <option value="WSTest" />
         </list>
       </option>
     </inspection_tool>

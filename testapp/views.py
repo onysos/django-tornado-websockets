@@ -1,7 +1,23 @@
-from django.shortcuts import render
+from django.views.generic import TemplateView
 
-# Create your views here.
+from tornado_websockets.WebSocket import WebSocket
 
-def index(request):
+ws_chat = WebSocket('/chat')
 
-    return render(request, 'testapp/index.html')
+
+@ws_chat.on('connection')
+def my_func():
+    ws_chat.emit('connection', 'Got a new connection')
+
+
+@ws_chat.on
+def close():
+    ws_chat.emit('close', 'WebSocket is closed')
+
+
+class IndexView(TemplateView):
+    template_name = 'testapp/index_old.html'
+
+    @ws_chat.on
+    def message(self, data):
+        ws_chat.emit('message', data.get('message', 'Default message'))
