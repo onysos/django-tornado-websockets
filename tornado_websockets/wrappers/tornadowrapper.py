@@ -1,10 +1,14 @@
 import pprint
 
+import tornado
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 
+import tornado_websockets
+
 pp = pprint.PrettyPrinter(indent=4)
+
 
 class TornadoWrapper:
     tornado_app = None
@@ -12,7 +16,10 @@ class TornadoWrapper:
     tornado_handlers = None
     tornado_settings = None
     tornado_port = 8000
-    handlers = []
+    handlers = [
+        tornado_websockets.static_app,
+        tornado_websockets.django_app,
+    ]
 
     @classmethod
     def start_app(cls, tornado_handlers, tornado_settings):
@@ -40,4 +47,11 @@ class TornadoWrapper:
 
     @classmethod
     def add_handlers(cls, handlers):
-        cls.handlers += handlers
+        if TornadoWrapper.tornado_app is not None:
+            TornadoWrapper.tornado_app.add_handlers('.*', handlers)
+            print('== Adding handlers to already running Tornado application. New handlers are:')
+            pp.pprint(cls.tornado_app.handlers)
+        else:
+            print('== Prepare new handlers for Tornado application :')
+            pp.pprint(handlers)
+            cls.handlers = handlers + cls.handlers
