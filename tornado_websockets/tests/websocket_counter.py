@@ -1,31 +1,31 @@
-from tornado_websockets.WebSocket import WebSocket
+from tornado_websockets.websocket import WebSocket
 
-ws_first = WebSocket('/test')
+ws_counter = WebSocket('/counter')
 
 
-class WebSocketFirst(object):
+class WSCounter(object):
     def __init__(self):
-        self.counter = None
-        ws_first.context = self
+        self.counter = 0
+        ws_counter.context = self
 
-    @ws_first.on
+    @ws_counter.on
     def connection(self):
         print("-- Got new connection")
 
-        ws_first.emit('connection', 'New connection')
+        ws_counter.emit('connection', 'New connection')
 
-    @ws_first.on('setup_counter')
+    @ws_counter.on('setup_counter')
     def my_method_lol(self, data):
         self.counter = data.get('value', 100)
 
-    @ws_first.on
+    @ws_counter.on
     def update_counter(self, data):
         self.counter = data.get('counter')
 
-        ws_first.emit('incremented_counter', {
+        ws_counter.emit('incremented_counter', {
             'value': self.counter
         })
 
-    @ws_first.on
+    @ws_counter.on
     def close(self):
         print('-- WebSocket is closed')
