@@ -91,41 +91,91 @@ a whole class):
     # Prototype: @ws.on(event_name) or @ws.on
 
     @ws_chat.on('my_first_event')
-    def my_function():
+    def my_function(data): # data is a dictionnary
         print('Catch "my_first_event" event')
 
     @ws_chat.on
-    def my_second_event():
+    def my_second_event(data):
         print('Catch "my_second_event" event')
 
 
     class IndexView(TemplateView):
         template_name = 'my_app/my_template.html'
 
+        # If you are using a websocket into a class, you should set the attribute 'ws.context = self', otherwise "self"
+        # parameter value for class methods will be set to None
+        def __init__(self, **kwargs):
+            super(IndexView, self).__init__(**kwargs)
+
+            # Do not forget this line for a class
+            ws_chat.context = self
+
         @ws_chat.on
         def message(self, data):
+            # "self" is now this instance of IndexView and not None
             print('Got message: %s' % data.get('message'))
 
 
-To emit an event, you can simple use the method ``ws.emit``:
+To emit an event, you can simply use the method ``ws.emit`` that **should be** called by or inside a function/method
+decorated by ``@ws.on``. Also, you **can not** directly write ``ws.emit(...)`` in ``your_class.__init__()`` method,
+even if this method is decorated by ``@ws.on``:
 
 .. code-block:: python
 
-    # Prototype: ws_chat.emit(event_name: string, message: string OR data: dict)
+    # Prototype: ws_chat.emit(event_name: string, message: string OR data: dict)
 
-    ws.emit('user_joined', 'An user joined the conversation')
-    # is equivalent too
-    ws.emit('user_joined', {'message': 'An user joined the conversation'})
+    from tornado_websockets.websocket import WebSocket
 
-    ws.emit('new_message', {
-        'from': 'John',
-        'message': '...'
-    })
+    ws = WebSocket('/my_ws')
+
+    ws.emit('event', 'My message') # Raise EmitHandlerException
+
+    def emit_message(message):
+        ws.emit('message', {
+            'from': 'John',
+            'message': message
+        })
+
+    class MyWebSocket(object):
+
+        def __init__(self):
+            ws.context = self
+
+            # Raise EmitHandlerException because directly used in __init__()
+            ws.emit('something', 'foo')
+
+            # Raise EmitHandlerException, because called in __init__() and no @ws.on decorator on ws.first_emit() method
+            ws.first_emit()
+
+            # Works because @ws.on decorator on ws.second_emit() method
+            ws.second_emit()
+
+        def first_emit(self):
+            # Raise EmitHandlerException because no decorator on the method
+            ws.emit('first', 'first foo')
+            emit_message('My message')
+
+        @ws.on
+        def second_emit(self):
+            # Works because of decorator on the method
+            ws.emit('second', 'second foo')
+            emit_message('My message')
+
+        def third_emit(self):
+            ws.emit('third', 'third foo')
+
+        @ws.on('event')
+        def my_method(self, data):
+
+            # Works because of @ws.on('event') decorator
+            ws.emit('event', 'bar')
+            self.my_other_method()
 
 Client side
 '''''''''''
 
-You can use *raw implementation* of WebSocket in JavaScript, but a JavaScript wrapper is in preparation:
+You can use *raw implementation* of WebSocket in JavaScript, but please wait a bit, I will write a JavaScript wrapper
+for WebSocket class:
 
 .. code-block:: javascript
 

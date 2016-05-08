@@ -2,34 +2,22 @@ import inspect
 
 from six import string_types
 
-from tornado_websockets.wrappers.tornadowrapper import TornadoWrapper
-from tornado_websockets.wrappers.websockethandlerwrapper import WebSocketHandlerWrapper
-
-
-class WebSocketNamespaceAlreadyRegistered(Exception):
-    pass
-
-
-class WebSocketEventAlreadyBinded(Exception):
-    pass
+import tornado_websockets.exceptions
+import tornado_websockets.wrappers
 
 
 class WebSocket(object):
-    def __init__(self, namespace):
+    def __init__(self, url):
         self.events = {}
         self.context = None
+        self.handler = None
 
-        self._namespace = namespace.strip()
-        if self._namespace[0:1] is not '/':
-            self._namespace = '/' + self._namespace
+        self.namespace = url.strip()
+        if self.namespace[0:1] is not '/':
+            self.namespace = '/' + self.namespace
 
-        self._handler = WebSocketHandlerWrapper
-        self._handler.namespaces.update({
-            self._namespace: self
-        })
-
-        TornadoWrapper.add_handlers([
-            ('/ws' + self._namespace, self._handler)
+        tornado_websockets.wrappers.TornadoWrapper.add_handlers([
+            ('/ws' + self.namespace, tornado_websockets.wrappers.WebSocketHandlerWrapper, {'websocket': self})
         ])
 
     def on(self, *args):
@@ -51,15 +39,22 @@ class WebSocket(object):
             raise ValueError('How the f*ck did you use this decorator???')
 
         if self.events.get(event) is not None:
-            raise WebSocketEventAlreadyBinded(
-                'The event "%s" is already binded for "%s" namespace' % (event, self._namespace)
+            raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(
+                'The event "%s" is already binded for "%s" namespace' % (event, self.namespace)
             )
 
-        print('-- Binding "%s" event for "%s" namespace' % (event, self._namespace))
+        print('-- Binding "%s" event for "%s" namespace' % (event, self.namespace))
         self.events[event] = callback
         return decorator
 
     def emit(self, event, data):
         print('-- WebSocket.emit(%s, %s)' % (event, data))
+        print('-- HANDLER: %s' % self.handler)
+
+        if not self.handler:
+            raise tornado_websockets.exceptions.EmitHandlerException(
+                'WebSocket handler for "%s" is actually not defined, you should use emit in a function or method '
+                'decorated with @websocket.on'
+            )
 
         pass

@@ -24,7 +24,7 @@
             ws.send(JSON.stringify({
                         event: 'message',
                         data: {message: $msg.value},
-                        namespace: 'my_chat'
+                        namespace: '/chat'
             }
             ));
         }, false);
