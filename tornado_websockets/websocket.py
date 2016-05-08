@@ -2,9 +2,16 @@ import inspect
 
 from six import string_types
 
-from tornado_websockets.exceptions import *
-from tornado_websockets.wrappers.tornado import TornadoWrapper
-from tornado_websockets.wrappers.websockethandler import WebSocketHandlerWrapper
+from tornado_websockets.wrappers.tornadowrapper import TornadoWrapper
+from tornado_websockets.wrappers.websockethandlerwrapper import WebSocketHandlerWrapper
+
+
+class WebSocketNamespaceAlreadyRegistered(Exception):
+    pass
+
+
+class WebSocketEventAlreadyBinded(Exception):
+    pass
 
 
 class WebSocket(object):
@@ -52,6 +59,7 @@ class WebSocket(object):
         self.events[event] = callback
         return decorator
 
-    def emit(self, *args):
+    def emit(self, event, data):
+        print('-- WebSocket.emit(%s, %s)' % (event, data))
 
         pass

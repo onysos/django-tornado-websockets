@@ -13,7 +13,7 @@ from django.apps import AppConfig
 from django.conf import settings
 from django.core.management import BaseCommand
 
-from tornado_websockets.wrappers.tornado import TornadoWrapper
+from tornado_websockets.wrappers.tornadowrapper import TornadoWrapper
 
 if django.VERSION[1] > 5:
     django.setup()
