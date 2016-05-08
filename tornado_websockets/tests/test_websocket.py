@@ -1,87 +1,92 @@
-from unittest import TestCase
+from __future__ import absolute_import, division, print_function, with_statement
 
-import tornado.escape
-import tornado.web
-import tornado.websocket
-import websocket
+# I just took the official websocket test file from Tornado
+# https://github.com/tornadoweb/tornado/blob/master/tornado/test/websocket_test.py
+# and modify it for my project.
+
+import traceback
+
+from tornado.concurrent import Future
+from tornado import gen
+from tornado.testing import AsyncHTTPTestCase, gen_test
+from tornado.web import RequestHandler
+
+from tornado_websockets.tests.websocket_counter import ws_counter
+from tornado_websockets.wrappers.tornadowrapper import TornadoWrapper
+
+try:
+    import tornado.websocket  # noqa
+    from tornado.util import _websocket_mask_python
+except ImportError:
+    # The unittest module presents misleading errors on ImportError
+    # (it acts as if websocket_test could not be found, hiding the underlying
+    # error).  If we get an ImportError here (which could happen due to
+    # TORNADO_EXTENSION=1), print some extra information before failing.
+    traceback.print_exc()
+    raise
+
+from tornado.websocket import WebSocketHandler, websocket_connect
+
+try:
+    from tornado import speedups
+except ImportError:
+    speedups = None
 
 
-def to_json(value):
-    return tornado.escape.json_encode(value)
+class TestWebSocketHandler(WebSocketHandler):
+    """Base class for testing handlers that exposes the on_close event.
+    This allows for deterministic cleanup of the associated socket.
+    """
+
+    def initialize(self, close_future, compression_options=None):
+        self.close_future = close_future
+        self.compression_options = compression_options
+
+    def get_compression_options(self):
+        return self.compression_options
+
+    def on_close(self):
+        self.close_future.set_result((self.close_code, self.close_reason))
 
 
-def from_json(value):
-    return tornado.escape.json_decode(value)
+
+class WebSocketBaseTestCase(AsyncHTTPTestCase):
+    @gen.coroutine
+    def ws_connect(self, path, compression_options=None):
+        ws = yield websocket_connect(
+            'ws://127.0.0.1:%d%s' % (self.get_http_port(), path),
+            compression_options=compression_options)
+        raise gen.Return(ws)
+
+    @gen.coroutine
+    def close(self, ws):
+        """Close a websocket connection and wait for the server side.
+        If we don't wait here, there are sometimes leak warnings in the
+        tests.
+        """
+        ws.close()
+        yield self.close_future
 
 
-class WebSocketTest(TestCase):
-    def setUp(self):
-        self.ws = websocket.create_connection('ws://127.0.0.1:8000/ws/test')
+class WebSocketTest(WebSocketBaseTestCase):
+    def get_app(self):
+        self.close_future = Future()
 
-        with self.assertRaises(websocket.WebSocketBadStatusException) as ex:
-            websocket.create_connection('ws://127.0.0.1:8000/ws/i/am/not/in/handlers')
+        TornadoWrapper.add_handlers([
+            ('/ws/counter', ws_counter, dict(close_future=self.close_future)),
+        ])
+        TornadoWrapper.start_app([], {})
+        return TornadoWrapper.tornado_app
 
-        self.assertEqual(str(ex.exception), 'Handshake status 404')
+    def test_http_request(self):
+        # WS server, HTTP client.
+        response = self.fetch('/ws/counter')
+        self.assertEqual(response.code, 400)
 
-    def test_connection(self):
-        self.assertEqual(self.ws.getstatus(), 101)
-
-    def test_emit_bad_json(self):
-        self.ws.send('Not a valid JSON string')
-
-        self.assertDictEqual(from_json(self.ws.recv()), {
-            'event': 'error',
-            'data': {
-                'message': 'Invalid JSON was sent.'
-            }
-        })
-
-    def test_emit_with_no_namespace(self):
-        self.ws.send('{"event": "message", "data": {}}')
-
-        self.assertDictEqual(from_json(self.ws.recv()), {
-            'event': 'error',
-            'data': {
-                'message': 'There is no namespace in this JSON.'
-            }
-        })
-
-    def test_emit_with_not_registered_namespace(self):
-        self.ws.send('{"namespace": "/foobar", "event": "message", "data": {}}')
-
-        self.assertDictEqual(from_json(self.ws.recv()), {
-            'event': 'error',
-            'data': {
-                'message': 'The namespace "/foobar" does not exist.'
-            }
-        })
-
-    def test_emit_with_no_event(self):
-        self.ws.send('{"namespace": "/test", "data": {}}')
-
-        self.assertDictEqual(from_json(self.ws.recv()), {
-            'event': 'error',
-            'data': {
-                'message': 'There is no event in this JSON.'
-            }
-        })
-
-    def test_emit_with_not_registered_event(self):
-        self.ws.send('{"namespace": "/test", "event": "bad_event", "data": {}}')
-
-        self.assertDictEqual(from_json(self.ws.recv()), {
-            'event': 'error',
-            'data': {
-                'message': 'The event "bad_event" does not exist in the namespace "/test".'
-            }
-        })
-
-    def test_emit_with_bad_data_format(self):
-        self.ws.send('{"namespace": "/test", "event": "connection", "data": "not a dictionary"}')
-
-        self.assertDictEqual(from_json(self.ws.recv()), {
-            'event': 'error',
-            'data': {
-                'message': 'The data should be a dictionary (JavaScript object).'
-            }
-        })
+    @gen_test
+    def test_websocket_gen(self):
+        ws = yield self.ws_connect('/ws/counter')
+        yield ws.write_message('hello')
+        response = yield ws.read_message()
+        self.assertEqual(response, 'hello')
+        yield self.close(ws)
