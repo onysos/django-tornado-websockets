@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+import django.core.handlers.wsgi
+import tornado.wsgi
 import tornado_websockets
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -122,12 +124,12 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Tornado configuration
+
 TORNADO = {
     # 'port': 8080,
     'handlers': [
-        # ('/ws/test/first', tornado_websockets.tests.WebSocketFirstTest),
-        # ('/ws/test/second', tornado_websockets.tests.WebSocketSecondTest),
-        # ('/ws/chat', testapp.websockets.WebSocketChat),
+        (r'%s(.*)' % STATIC_URL, tornado.web.StaticFileHandler, {'path': STATIC_ROOT}),
+        tornado_websockets.django_app
     ],
     'settings': {
         'autoreload': True,

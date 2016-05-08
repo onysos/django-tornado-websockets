@@ -15,11 +15,10 @@ class TornadoWrapper:
     tornado_server = None
     tornado_handlers = None
     tornado_settings = None
+
+    # Default values for user configuration
     tornado_port = 8000
-    handlers = [
-        tornado_websockets.static_app,
-        tornado_websockets.django_app,
-    ]
+    handlers = []
 
     @classmethod
     def start_app(cls, tornado_handlers, tornado_settings):

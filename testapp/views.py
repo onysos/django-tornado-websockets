@@ -20,4 +20,5 @@ class IndexView(TemplateView):
 
     @ws_chat.on
     def message(self, data):
+        print(ws_chat.events)
         ws_chat.emit('message', data.get('message', 'Default message'))
