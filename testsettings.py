@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
-import tornado_websockets.tests
+import tornado_websockets
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
@@ -128,9 +128,6 @@ TORNADO = {
         # ('/ws/test/first', tornado_websockets.tests.WebSocketFirstTest),
         # ('/ws/test/second', tornado_websockets.tests.WebSocketSecondTest),
         # ('/ws/chat', testapp.websockets.WebSocketChat),
-        # Must not be used as long Nginx or Apache should serve static files
-        tornado_websockets.static_app,
-        tornado_websockets.django_app
     ],
     'settings': {
         'autoreload': True,
