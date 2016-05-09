@@ -61,26 +61,23 @@ class TornadoWrapper:
 
 
 class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
-    namespaces = {}
-
     def initialize(self, websocket):
 
         if not isinstance(websocket, tornado_websockets.websocket.WebSocket):
-            raise tornado_websockets.exceptions.InvalidWebSocketInstance(
+            raise tornado_websockets.exceptions.InvalidInstanceError(
                 '"websocket" parameter from "WebSocketHandlerWrapper.initialize" method '
                 'should be an instance of "tornado_websockets.WebSocket", got "%s" instead' % repr(websocket))
 
-        # Set link from websocket to handler
-        websocket.handler = self
-
         # Set link from handler to websocket
-        WebSocketHandlerWrapper.namespaces.update({
-            websocket.namespace: websocket
-        })
+        self.websocket = websocket
+        # Set link from websocket to handler
+        websocket.handlers.append(self)
+
+        print('HANDLER: %s' % self)
+        print('WEBSOCKET: %s' % self.websocket)
 
     def on_message(self, message):
-        print('MESSAGE: %s' % message)
-        socket = None
+        # print('MESSAGE: %s' % message)
 
         try:
             message = tornado.escape.json_decode(message)
@@ -91,21 +88,11 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
             self.emit_error('Invalid JSON was sent.')
             return
 
-        if not namespace:
-            self.emit_error('There is no namespace in this JSON.')
-            return
-        else:
-            socket = WebSocketHandlerWrapper.namespaces.get(namespace)
-
-            if socket is None:
-                self.emit_error('The namespace "%s" does not exist.' % namespace)
-                return
-
         if not event:
             self.emit_error('There is no event in this JSON.')
             return
-        elif socket.events.get(event) is None:
-            self.emit_error('The event "%s" does not exist in the namespace "%s".' % (event, namespace))
+        elif self.websocket.events.get(event) is None:
+            self.emit_error('The event "%s" does not exist for websocket "%s"' % (event, self.websocket))
             return
 
         if not data:
@@ -118,21 +105,27 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
         # print('EVENT: %s' % event)
         # print('DATA: %s' % data)
 
-        callback = socket.events.get(event)
+        callback = self.websocket.events.get(event)
         spec = inspect.getargspec(callback)
         kwargs = {}
 
         # print('SPEC: %s' % str(spec))
 
         if 'self' in spec.args:
-            kwargs['self'] = socket.context
+            kwargs['self'] = self.websocket.context
         if len(spec.args) > 1 and spec.args[1]:
             kwargs[spec.args[1]] = data
 
+        # print('CALLBACK: %s' % callback)
         # print('KWARGS: %s' % kwargs)
 
         print('-- Triggering "%s" event from "%s" namespace' % (event, namespace))
-        callback(**kwargs)
+
+        return callback(**kwargs)
+
+    def on_close(self):
+        print('-- on_close()')
+        self.websocket.handlers.remove(self)
 
     def emit(self, event, data):
         self.write_message(tornado.escape.json_encode({
