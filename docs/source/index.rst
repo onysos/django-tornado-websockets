@@ -7,7 +7,11 @@ Django-tornado-websockets's documentation
 =========================================
 
 Django-tornado-websockets is a useful solution to provide an easy way to use
-`Tornado WebSockets <http://www.tornadoweb.org/en/stable/websocket.html>`_ with a `Django <https://www.djangoproject.com/>`_ application.
+`Tornado WebSockets <http://www.tornadoweb.org/en/stable/websocket.html>`_ with a
+`Django <https://www.djangoproject.com/>`_ application.
+
+.. Important::
+   Django-tornado-websockets is actually in **alpha version**!
 
 Quick links
 -----------
@@ -27,8 +31,8 @@ Architecture
 
    Example of an architecture using Tornado as WSGI server, Django and django-tornado-websockets
 
-To use django-tornado-websockets's WebSockets, you should use **Tornado as a WSGI server** where you will define handlers
-to *handle* an incoming request. Since we already have a WSGI server, it's probably useless to try running
+To use django-tornado-websockets's WebSockets, you should use **Tornado as a WSGI server** where you will define
+handlers to *handle* an incoming request. Since we already have a WSGI server, it's probably useless to try running
 `Gunicorn <http://gunicorn.org>`_ or `uWSGI <http://uwsgi-docs.readthedocs.io/en/latest/>`_ as WSGI server.
 You can try to wrap Tornado **WSGI server** into Gunicorn/uWSGI **WSGI server** but it's a bit retarded ``(・_・ヾ``...
 
