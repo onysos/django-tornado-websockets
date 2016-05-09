@@ -12,6 +12,8 @@ Installation
 Configuration
 -------------
 
+Add ``tornado_websockets`` to your ``INSTALLED_APPS``
+
 At the end of your file `my_project/settings.py`, you can define a Tornado configuration where you will
 be able to define the running port, handlers and settings for Tornado application:
 
@@ -69,6 +71,13 @@ To set Tornado settings, you need to read the official documentation about `Torn
 
 Quick start
 -----------
+
+Running server
+''''''''''''''
+
+.. code-block:: bash
+
+    $ python manage.py runtornado
 
 Server side
 '''''''''''
