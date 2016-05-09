@@ -15,6 +15,12 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 class TornadoWrapper:
+    """
+        Wrapper for Tornado application and server handling.
+        With this class, you can access to Tornado app, handlers and settings everywhere in your code (it's really
+        useful for runtornado command and WebSockets)
+    """
+
     tornado_app = None
     tornado_server = None
     tornado_handlers = None
@@ -26,7 +32,17 @@ class TornadoWrapper:
 
     @classmethod
     def start_app(cls, tornado_handlers, tornado_settings):
-        # Not `tornado_handlers += cls.handlers` because wildcard handler should be the last
+        """
+            Initialize the Tornado web application with given handlers and settings
+
+            :param tornado_handlers: Handlers (route) for Tornado
+            :param tornado_settings: Settings for Tornado
+            :type tornado_handlers: list
+            :type tornado_settings: dict
+            :return: None
+        """
+
+        # Not `tornado_handlers += cls.handlers` because wildcard handler should be the last value in handlers list
         # http://www.tornadoweb.org/en/stable/_modules/tornado/web.html#Application.add_handlers
         tornado_handlers = cls.handlers + tornado_handlers
 
@@ -34,12 +50,26 @@ class TornadoWrapper:
 
     @classmethod
     def listen(cls, tornado_port):
+        """
+            Start the Tornado HTTP server on given port
+
+            :param tornado_port: Port to listen
+            :type tornado_port: int
+            :return: None
+
+            .. todo:: Add support for HTTPS server
+        """
         cls.tornado_port = tornado_port
         tornado_server = tornado.httpserver.HTTPServer(cls.tornado_app)
         tornado_server.listen(cls.tornado_port)
 
     @classmethod
     def loop(cls):
+        """
+            Run Tornado main loop and display configuration about Tornado handlers and settings
+
+            :return: None
+        """
         print('== Using port %s' % cls.tornado_port)
         print('== Using handlers:')
         pp.pprint(cls.tornado_app.handlers)
@@ -50,17 +80,44 @@ class TornadoWrapper:
 
     @classmethod
     def add_handlers(cls, handlers):
-        if TornadoWrapper.tornado_app is not None:
-            TornadoWrapper.tornado_app.add_handlers('.*', handlers)
-            print('== Adding handlers to already running Tornado application. New handlers are:')
-            pp.pprint(cls.tornado_app.handlers)
-        else:
-            print('== Prepare new handlers for Tornado application :')
+        """
+            Add an handler to Tornado app if it's defined, otherwise it's add this handler to the
+            TornadoWrapper.tornado_handlers list
+
+            :param handlers: Handlers to add
+            :type handlers: list
+            :return: Tornado application handlers
+            :rtype: list
+        """
+
+        if not TornadoWrapper.tornado_app:
+            print('== Prepare new handlers for Tornado application:')
             pp.pprint(handlers)
+
+            # ``cls.handlers = handlers + cls.handlers`` and not ``cls.handlers += handlers``,
+            # see `TornadoWrapper.start_app` source to know why.
             cls.handlers = handlers + cls.handlers
+
+            return cls.handlers
+
+        print('== Adding handlers to already running Tornado application. New handlers are:')
+        TornadoWrapper.tornado_app.add_handlers('.*', handlers)
+        pp.pprint(cls.tornado_app.handlers)
+
+        return cls.tornado_app.handlers
 
 
 class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
+    """
+
+
+    """
+
+    def __init__(self, application, request, **kwargs):
+        super(WebSocketHandlerWrapper, self).__init__(application, request, **kwargs)
+
+        self.websocket = None
+
     def initialize(self, websocket):
 
         if not isinstance(websocket, tornado_websockets.websocket.WebSocket):
@@ -84,7 +141,7 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
             namespace = message.get('namespace')
             event = message.get('event')
             data = message.get('data')
-        except(ValueError):
+        except ValueError:
             self.emit_error('Invalid JSON was sent.')
             return
 

@@ -55,4 +55,4 @@ Documentation
    installation
    django_integration_configuration
    usage
-
+   api

@@ -22,6 +22,7 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../..'))
 import django
+import tornado_websockets
 os.environ['DJANGO_SETTINGS_MODULE'] = 'testsettings'
 django.setup()
 

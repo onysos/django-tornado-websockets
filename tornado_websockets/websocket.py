@@ -7,6 +7,10 @@ import tornado_websockets.wrappers
 
 
 class WebSocket(object):
+    """
+        Class that you SHOULD use to use Tornado websockets
+    """
+
     def __init__(self, url):
         self.events = {}
         self.context = None
@@ -24,6 +28,7 @@ class WebSocket(object):
 
     def on(self, *args):
         def decorator(_fn):
+            @wraps(_fn)
             def wrapper(self, *args, **kwargs):
                 print('WRAPPER(%s, %s, %s)' % (self, args, kwargs))
                 return _fn(self, *args, **kwargs)
