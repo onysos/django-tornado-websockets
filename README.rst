@@ -91,7 +91,6 @@ The WebSocket usage should be in your `my_app/views.py` file:
     # Make a new instance of WebSocket and automatically add handler '/ws/chat' to Tornado handlers
     ws_chat = WebSocket('/chat')
 
-
 To listen for an event you should use the decorator ``@ws.on``. It works for function and methods (and soon for
 a whole class):
 

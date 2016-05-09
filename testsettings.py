@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
-import django.core.handlers.wsgi
-import tornado.wsgi
+import tornado.web
+
 import tornado_websockets
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
