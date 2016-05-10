@@ -116,8 +116,6 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
     def __init__(self, application, request, **kwargs):
         super(WebSocketHandlerWrapper, self).__init__(application, request, **kwargs)
 
-        self.websocket = None
-
     def initialize(self, websocket):
 
         if not isinstance(websocket, tornado_websockets.websocket.WebSocket):
@@ -129,9 +127,6 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
         self.websocket = websocket
         # Set link from websocket to handler
         websocket.handlers.append(self)
-
-        print('HANDLER: %s' % self)
-        print('WEBSOCKET: %s' % self.websocket)
 
     def on_message(self, message):
         # print('MESSAGE: %s' % message)
@@ -170,8 +165,10 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
 
         if 'self' in spec.args:
             kwargs['self'] = self.websocket.context
-        if len(spec.args) > 1 and spec.args[1]:
-            kwargs[spec.args[1]] = data
+        if 'socket' in spec.args:
+            kwargs['socket'] = self
+        if 'data' in spec.args:
+            kwargs['data'] = data
 
         # print('CALLBACK: %s' % callback)
         # print('KWARGS: %s' % kwargs)
@@ -185,10 +182,10 @@ class WebSocketHandlerWrapper(tornado.websocket.WebSocketHandler):
         self.websocket.handlers.remove(self)
 
     def emit(self, event, data):
-        self.write_message(tornado.escape.json_encode({
+        self.write_message({
             'event': event,
             'data': data
-        }))
+        })
 
     def emit_error(self, message):
         print('-- Error: %s' % message)

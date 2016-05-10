@@ -78,7 +78,4 @@ class WebSocket(object):
             if isinstance(data, string_types):
                 data = {'message': data}
 
-            handler.write_message({
-                'event': event,
-                'data': data
-            })
+            handler.emit(event, data)
