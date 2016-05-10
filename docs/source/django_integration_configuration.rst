@@ -1,6 +1,10 @@
 Django integration and configuration
 ====================================
 
+.. contents::
+    :local:
+    :backlinks: none
+
 Integration
 -----------
 
@@ -40,13 +44,15 @@ You can provide a Tornado configuration in your ``settings.py`` file like this:
 
 Read more about Tornado ``handlers`` and ``settings`` in the Tornado documentation: `Application configuration <http://www.tornadoweb.org/en/stable/web.html#application-configuration>`_
 
-Adding Django
-^^^^^^^^^^^^^
+Django support
+^^^^^^^^^^^^^^
 
 To makes Django work with Tornado, you need to add a new handler to Tornado configuration.
 Tornado can `runs WSGI apps <http://www.tornadoweb.org/en/stable/wsgi.html#running-wsgi-apps-on-tornado-servers>`_
 (like Django) by using ``tornado.wsgi.WSGIContainer``, and we provide an already defined Django WSGI app that you can
-easily use; Or you can make your own Django WSGI app using the `tornado_websockets/__init__.py <https://github.com/Kocal/django-tornado-websockets/blob/develop/tornado_websockets/__init__.py#L4>`_
+easily use.
+
+You can also make your own Django WSGI app using the `tornado_websockets/__init__.py <https://github.com/Kocal/django-tornado-websockets/blob/develop/tornado_websockets/__init__.py#L4>`_
 file.
 
 .. code-block:: python
@@ -91,7 +97,7 @@ Additional settings
 ^^^^^^^^^^^^^^^^^^^
 
 You can pass additional settings to Tornado with ``TORNADO['settings']`` dictionary.
-For example, it can be useful to set ``True`` value ``debug`` key if you are still in a development phase:
+For example, it can be useful to set ``'debug': True`` row if you are still in a development phase:
 
 .. code-block:: python
 

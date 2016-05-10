@@ -13,13 +13,7 @@ Django-tornado-websockets is a useful solution to provide an easy way to use
 .. Important::
    Django-tornado-websockets is actually in **alpha version**!
 
-Quick links
------------
-
-- `Source (GitHub) <https://github.com/Kocal/django-tornado-websockets>`_
-- `Documentation (develop) <http://django-tornado-websockets.readthedocs.io/en/develop/>`_
-- `Documentation (latest) <http://django-tornado-websockets.readthedocs.io/en/latest/>`_
-- `Tornado documentation <http://www.tornadoweb.org/en/stable/>`_
+-------------------------------------------------------------------------------
 
 Architecture
 ------------
@@ -34,7 +28,8 @@ Architecture
 To use django-tornado-websockets's WebSockets, you should use **Tornado as a WSGI server** where you will define
 handlers to *handle* an incoming request. Since we already have a WSGI server, it's probably useless to try running
 `Gunicorn <http://gunicorn.org>`_ or `uWSGI <http://uwsgi-docs.readthedocs.io/en/latest/>`_ as WSGI server.
-You can try to wrap Tornado **WSGI server** into Gunicorn/uWSGI **WSGI server** but it's a bit retarded ``(・_・ヾ``...
+You can try to wrap Tornado **WSGI server** into Gunicorn/uWSGI **WSGI server** but... It's a bit retarded I think
+``(・_・ヾ``...
 
 Let's explain this diagram:
 
@@ -46,11 +41,14 @@ Let's explain this diagram:
 
 .. [#f1] I forgot it on the diagram, but nginx or Apache has the job to deliver static files, it's not Tornado's work
 
+-----------------------------------------------------------------------------------------
+
 Documentation
 -------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :numbered:
 
    installation
    django_integration_configuration
