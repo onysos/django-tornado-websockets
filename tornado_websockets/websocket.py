@@ -27,29 +27,19 @@ class WebSocket(object):
         ])
 
     def on(self, *args):
-        def decorator(_fn):
-            @wraps(_fn)
-            def wrapper(self, *args, **kwargs):
-                print('WRAPPER(%s, %s, %s)' % (self, args, kwargs))
-                return _fn(self, *args, **kwargs)
-
-            return wrapper
-
         # print('ON ARGS: %s' % args)
 
         if len(args) < 1:
             raise ValueError('WebSocket.on decorator take at least one argument.')
 
         if not callable(args[0]):
-            raise tornado_websockets.exceptions.NotCallableError()
+            raise tornado_websockets.exceptions.NotCallableError(args[0])
 
         event = args[0].__name__
         callback = args[0]
 
         if self.events.get(event) is not None:
-            raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(
-                'The event "%s" is already binded for "%s" namespace' % (event, self.namespace)
-            )
+            raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(event, self.namespace)
 
         print('-- Binding "%s" event for "%s" namespace with callback "%s"' % (event, self.namespace, callback))
         self.events[event] = callback
