@@ -4,6 +4,7 @@ from tornado_websockets.websocket import WebSocket
 
 ws_chat = WebSocket('/my_chat')
 
+
 class MyChat(TemplateView):
     """
         Proof of concept about a really simple web chat using websockets and supporting messages history
