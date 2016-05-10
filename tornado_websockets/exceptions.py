@@ -2,11 +2,11 @@ class TornadoWebSocketsError(Exception):
     pass
 
 
-class WebSocketNamespaceAlreadyRegistered(TornadoWebSocketsError, Exception):
+class WebSocketNamespaceAlreadyRegistered(TornadoWebSocketsError, NameError):
     pass
 
 
-class WebSocketEventAlreadyBinded(TornadoWebSocketsError, Exception):
+class WebSocketEventAlreadyBinded(TornadoWebSocketsError, NameError):
     pass
 
 
@@ -14,5 +14,9 @@ class InvalidInstanceError(TornadoWebSocketsError, ValueError):
     pass
 
 
-class EmitHandlerError(TornadoWebSocketsError, Exception):
+class EmitHandlerError(TornadoWebSocketsError):
+    pass
+
+
+class NotCallableError(TornadoWebSocketsError):
     pass
