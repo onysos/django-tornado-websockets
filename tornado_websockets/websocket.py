@@ -8,7 +8,7 @@ import tornado_websockets.wrappers
 
 class WebSocket(object):
     """
-        Class that you SHOULD use to use Tornado websockets
+        Class that you should use Tornado WebSockets
     """
 
     def __init__(self, url):
@@ -40,16 +40,11 @@ class WebSocket(object):
         if len(args) < 1:
             raise ValueError('WebSocket.on decorator take at least one argument.')
 
-        if isinstance(args[0], string_types): # we got an event name
-            event = args[0]
-            callback = decorator
-        elif callable(args[0]): # we got a function
-            event = args[0].__name__
-            callback = args[0]
-        elif inspect.isclass(args[0]):
-            raise NotImplementedError('WebSocket.on decorator is not already implemented for classes.')
-        else:
-            raise ValueError('How the f*ck did you use this decorator???')
+        if not callable(args[0]):
+            raise tornado_websockets.exceptions.NotCallableError()
+
+        event = args[0].__name__
+        callback = args[0]
 
         if self.events.get(event) is not None:
             raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(
