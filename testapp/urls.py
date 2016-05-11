@@ -4,6 +4,6 @@ from django.contrib import admin
 from . import views
 
 urlpatterns = [
-    url(r'^chat/', views.index),
+    url(r'^my_chat/$', views.MyChat.as_view(), name='index'),
     url(r'^admin/', admin.site.urls)
 ]

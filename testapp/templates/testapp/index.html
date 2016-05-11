@@ -1,28 +1,121 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <style>
+        .hide { display: none }
+    </style>
+</head>
 <body>
-<h1>Hello from tornado!</h1>
+<h1>WebSocket chat</h1>
 
-<form name="send">
-    <input id="msg">
-    <input type="submit" value="Send">
+<!-- "Authentification" -->
+
+<form name="choose-username">
+    <label>Please choose an username:
+        <input type="text" name="username" autocomplete="off">
+    </label>
+    <input type="submit" value="Chat!">
 </form>
 
-<script>
-       var ws = new WebSocket("ws://127.0.0.1:8000/ws/chat");
-       var $form = document.querySelector('form[name="send"]');
-       var $msg = document.querySelector('input#msg');
-       ws.onopen = function() {
-          ws.send("Hello, world");
-          $form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            ws.send($msg.value);
-          }, false);
-       };
-       ws.onmessage = function (evt) {
-          alert("Response from server: " + evt.data);
-       };
+<!-- Web chat -->
 
+<div id="chat" class="hide">
+    <form name="message">
+        <label>Message:
+            <input type="text" name="message" autocomplete="off">
+            <input type="submit" value="Send">
+        </label>
+    </form>
+
+    <h2>Messages:</h2>
+    <ul id="messages"></ul>
+</div>
+
+<script>
+
+    /* --- Authentification --- */
+
+    var $formChooseUsername = document.querySelector('form[name="choose-username"]');
+    var $username = $formChooseUsername.querySelector('input[name="username"]');
+    var username;
+
+    $formChooseUsername.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        username = $username.value.trim();
+
+        if(username == '') {
+            return alert('Provide an username')
+        }
+
+        return show_chat();
+    }, false);
+
+    /* --- Web Chat --- */
+
+    var $chat = document.querySelector('#chat');
+    var $formMessage = document.querySelector('form[name="message"]');
+    var $messages = document.querySelector('#messages');
+    var $fieldMessage = $formMessage.querySelector('input[type="text"]');
+
+    function show_chat() {
+        $formChooseUsername.classList.add('hide');
+        $chat.classList.remove('hide');
+
+        var namespace = '/my_chat';
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws' + namespace);
+
+        ws.onopen = function () {
+            ws.send(JSON.stringify({
+                event: 'connection',
+                namespace: namespace,
+                data: {
+                    username: username
+                }
+            }));
+
+            $formMessage.addEventListener('submit', function(e) {
+                e.preventDefault();
+                ws.send(JSON.stringify({
+                    event: 'message',
+                    namespace: namespace,
+                    data: {
+                        username: username,
+                        message: $fieldMessage.value.trim()
+                    }
+                }));
+
+                $fieldMessage.value = ''
+            }, false)
+        };
+
+        ws.onmessage = function (e) {
+            var d = JSON.parse(e.data);
+
+            var event = d.event;
+            var data = d.data;
+
+            console.log(event, data);
+
+            switch (event) {
+                case 'new_connection':
+                    write_message(data.message);
+                    break;
+
+                case 'new_message':
+                    console.log(data);
+                    write_message(data.username + ' writes: "' + data.message + '"');
+                    break;
+            }
+        }
+    }
+
+    function write_message(message) {
+        var $message = document.createElement('li');
+        $message.textContent = message;
+        $messages.appendChild($message)
+    }
 </script>
+
 </body>
 </html>

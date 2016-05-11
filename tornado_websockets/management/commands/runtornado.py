@@ -4,24 +4,22 @@
 # I also made a more advanced file for a Django WSGIHandler, a Tornado WebSocketHandler, and a Tornado RequestHandler:
 #   https://github.com/Kocal/django-test-websockets/blob/tornado-websocket/DjangoTestWebsockets/tornado_main.py
 
-import pprint
-
 import django
 import django.core.handlers.wsgi
-import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.wsgi
+from django.apps import AppConfig
 from django.conf import settings
 from django.core.management import BaseCommand
+
+from tornado_websockets.tornadowrapper import TornadoWrapper
 
 if django.VERSION[1] > 5:
     django.setup()
 
-pp = pprint.PrettyPrinter(indent=4)
 
-
-class Command(BaseCommand):
+class Command(BaseCommand, AppConfig):
     help = 'Run Tornado web server with Django and WebSockets support'
 
     def __init__(self, *args, **kwargs):
@@ -40,7 +38,6 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-
         # 1 - Read Tornado settings from Django settings file
         try:
             tornado_settings = settings.TORNADO
@@ -66,14 +63,6 @@ class Command(BaseCommand):
         tornado_settings = tornado_settings.get('settings', {})
 
         # 4 - Run Tornado
-        self.stdout.write('== Using port %d\n' % tornado_port)
-        self.stdout.write('== Using handlers:\n')
-        pp.pprint(tornado_handlers)
-        self.stdout.write('== Using settings:\n')
-        pp.pprint(tornado_settings)
-
-        tornado_app = tornado.web.Application(tornado_handlers)
-        server = tornado.httpserver.HTTPServer(tornado_app)
-        server.listen(tornado_port)
-
-        tornado.ioloop.IOLoop.instance().start()
+        TornadoWrapper.start_app(tornado_handlers, tornado_settings)
+        TornadoWrapper.listen(tornado_port)
+        TornadoWrapper.loop()
