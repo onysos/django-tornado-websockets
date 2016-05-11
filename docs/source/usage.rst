@@ -110,7 +110,7 @@ Emit an event
 
         @my_ws.on
         def connection(self, socket, data):
-            user = data.get('user')  # 'Robert' for example
+            user = data.get('user')  # e.g. 'Robert'
 
             # Inform all users that Robert joined the party
             my_ws.emit('user_joined', {
