@@ -24,7 +24,8 @@ class WebSocketEventAlreadyBinded(TornadoWebSocketsError, NameError):
 
 class InvalidWebSocketHandlerInstanceError(TornadoWebSocketsError, ValueError):
     """
-        Exception thrown when :func:`tornado_websockets.websocket.WebSocket.emit` method could not find a valid WebSocketHandler instance.
+        Exception thrown when :meth:`WebSocket.emit() <tornado_websockets.websocket.WebSocket.emit>` method could not
+        find a valid WebSocketHandler instance.
 
         * ``obj`` - actual instance which try to stealing WebSocketHandler identity.
     """
@@ -40,7 +41,7 @@ class InvalidWebSocketHandlerInstanceError(TornadoWebSocketsError, ValueError):
 class EmitHandlerError(TornadoWebSocketsError):
     """
         Exception thrown when an user try to emit an event without being in a function or class method decorated
-        by :func:`tornado_websockets.websocket.WebSocket.on` decorator.
+        by :meth:`@WebSocket.on() <tornado_websockets.websocket.WebSocket.on>` decorator.
 
         * ``event`` - name of the event under investigation.
         * ``namespace`` - namespace where the offence have taken place.
