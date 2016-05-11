@@ -27,7 +27,7 @@ class MyChat(TemplateView):
             :param data: Data sent by a client
             :param socket: WebSocket of the current client
             :type data: dict
-            :type socket: tornado_websockets.wrappers.WebSocketHandlerWrapper
+            :type socket: tornado_websockets.websockethandler.WebSocketHandler
             :return: None
         """
 
@@ -42,7 +42,7 @@ class MyChat(TemplateView):
             :param data: Data sent by a client
             :param socket: WebSocket of the current client
             :type data: dict
-            :type socket: tornado_websockets.wrappers.WebSocketHandlerWrapper
+            :type socket: tornado_websockets.websockethandler.WebSocketHandler
 
             :return: None
         """

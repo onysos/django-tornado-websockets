@@ -1,10 +1,10 @@
 import inspect
 
-from six import string_types, wraps
+from six import string_types
 
 import tornado_websockets.exceptions
-import tornado_websockets.wrappers
-
+import tornado_websockets.websockethandler
+import tornado_websockets.tornadowrapper
 
 class WebSocket(object):
     """
@@ -20,8 +20,8 @@ class WebSocket(object):
         if self.namespace[0:1] is not '/':
             self.namespace = '/' + self.namespace
 
-        tornado_websockets.wrappers.TornadoWrapper.add_handlers([
-            ('/ws' + self.namespace, tornado_websockets.wrappers.WebSocketHandlerWrapper, {
+        tornado_websockets.tornadowrapper.TornadoWrapper.add_handlers([
+            ('/ws' + self.namespace, tornado_websockets.websockethandler.WebSocketHandler, {
                 'websocket': self
             })
         ])
@@ -49,16 +49,11 @@ class WebSocket(object):
         print('-- WebSocket.emit(%s, %s)' % (event, data))
 
         if not self.handlers:
-            raise tornado_websockets.exceptions.EmitHandlerError(
-                'WebSocket handler for "%s" is actually not defined, you should use emit in a function or method '
-                'decorated with @websocket.on'
-            )
+            raise tornado_websockets.exceptions.EmitHandlerError(event, self.data)
 
         for handler in self.handlers:
-            if not isinstance(handler, tornado_websockets.wrappers.WebSocketHandlerWrapper):
-                raise tornado_websockets.exceptions.InvalidInstanceError(
-                    'WebSocket handler is not an instance of WebSocketHandlerWrapper, actually it is "%s"' % repr(handler)
-                )
+            if not isinstance(handler, tornado_websockets.websockethandler.WebSocketHandler):
+                raise tornado_websockets.exceptions.InvalidInstanceError(handler)
 
             if isinstance(data, string_types):
                 data = {'message': data}

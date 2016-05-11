@@ -14,8 +14,8 @@ class WSCounter(object):
 
         ws_counter.emit('connection', 'New connection')
 
-    @ws_counter.on('setup_counter')
-    def my_method_lol(self, data):
+    @ws_counter.on
+    def setup_counter(self, data):
         self.counter = data.get('value', 100)
 
     @ws_counter.on

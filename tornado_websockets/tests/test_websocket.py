@@ -9,10 +9,9 @@ import traceback
 from tornado.concurrent import Future
 from tornado import gen
 from tornado.testing import AsyncHTTPTestCase, gen_test
-from tornado.web import RequestHandler
 
 from tornado_websockets.tests.websocket_counter import ws_counter
-from tornado_websockets.wrappers.tornadowrapper import TornadoWrapper
+from tornado_websockets.tornadowrapper import TornadoWrapper
 
 try:
     import tornado.websocket  # noqa
@@ -49,7 +48,6 @@ class TestWebSocketHandler(WebSocketHandler):
         self.close_future.set_result((self.close_code, self.close_reason))
 
 
-
 class WebSocketBaseTestCase(AsyncHTTPTestCase):
     @gen.coroutine
     def ws_connect(self, path, compression_options=None):
@@ -72,9 +70,9 @@ class WebSocketTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
 
-        TornadoWrapper.add_handlers([
-            ('/ws/counter', ws_counter, dict(close_future=self.close_future)),
-        ])
+        # TornadoWrapper.add_handlers([
+        #     ('/ws/counter', WebSocketHandler, dict(websocket=ws_counter, close_future=self.close_future)),
+        # ])
         TornadoWrapper.start_app([], {})
         return TornadoWrapper.tornado_app
 
