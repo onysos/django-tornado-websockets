@@ -13,8 +13,9 @@ pp = pprint.PrettyPrinter(indent=4)
 class TornadoWrapper:
     """
         Wrapper for Tornado application and server handling.
-        With this class, you can access to Tornado app, handlers and settings everywhere in your code (it's really
-        useful when you run `runtornado` management command and work with WebSockets).
+
+        It let you access to Tornado app, handlers and settings everywhere in your code (it's really
+        useful when you run ``runtornado`` management command and WebSockets management).
     """
 
     tornado_app = None
@@ -31,7 +32,7 @@ class TornadoWrapper:
         """
             Initialize the Tornado web application with given handlers and settings.
 
-            :param tornado_handlers: Handlers (route) for Tornado
+            :param tornado_handlers: Handlers (routes) for Tornado
             :param tornado_settings: Settings for Tornado
             :type tornado_handlers: list
             :type tornado_settings: dict

@@ -12,23 +12,36 @@ from tornado_websockets.exceptions import *
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
-    def __init__(self, application, request, **kwargs):
-        super(WebSocketHandler, self).__init__(application, request, **kwargs)
+    """
+        Represents a WebSocket connection, wrapper of `tornado.websocket.WebSocketHandler <http://www.tornadoweb.org/en/stable/websocket.html#event-handlers>`_ class.
+
+        This class should not be instantiated directly; use the :class:`~tornado_websockets.websocket.WebSocket` class
+        instead.
+    """
 
     def initialize(self, websocket):
+        """
+            Called when class initialization, makes a link between a :class:`~tornado_websockets.websocket.WebSocket`
+            instance and this object.
+
+            :param websocket: instance of WebSocket.
+            :type websocket: WebSocket
+        """
 
         if not isinstance(websocket, tornado_websockets.websocket.WebSocket):
-            raise InvalidWebSocketHandlerInstanceError(
-                '"websocket" parameter from "WebSocketHandlerWrapper.initialize" method '
-                'should be an instance of "tornado_websockets.WebSocket", got "%s" instead' % repr(websocket))
+            raise InvalidInstanceError(websocket, 'tornado_websockets.websocket.WebSocket')
 
-        # Set link from handler to websocket
+        # Make a link between a WebSocket instance and this object
         self.websocket = websocket
-        # Set link from websocket to handler
         websocket.handlers.append(self)
 
     def on_message(self, message):
-        # print('MESSAGE: %s' % message)
+        """
+            Handle incoming messages on the WebSocket.
+
+            :param message: JSON string
+            :type message: str
+        """
 
         try:
             message = tornado.escape.json_decode(message)
@@ -77,15 +90,37 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         return callback(**kwargs)
 
     def on_close(self):
-        print('-- on_close()')
+        """
+            Called when the WebSocket is closed, delete the link between this object and its WebSocket.
+        """
+
         self.websocket.handlers.remove(self)
 
     def emit(self, event, data):
+        """
+            Sends a given event/data combinaison to the client of this WebSocket.
+
+            Wrapper for `tornado.websocket.WebSocketHandler.write_message <http://www.tornadoweb.org/en/stable/
+            websocket.html#tornado.websocket.WebSocketHandler.write_message>`_ method.
+
+            :param event: event name to emit
+            :param data: associated data
+            :type event: str
+            :type data: dict
+        """
+
         self.write_message({
             'event': event,
             'data': data
         })
 
     def emit_error(self, message):
+        """
+            Shortuct to emit an error.
+
+            :param message: error message
+            :type message: str
+        """
+
         print('-- Error: %s' % message)
         return self.emit('error', {'message': message})

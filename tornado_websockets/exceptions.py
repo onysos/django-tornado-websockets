@@ -22,20 +22,23 @@ class WebSocketEventAlreadyBinded(TornadoWebSocketsError, NameError):
         return 'The event "%s" is already binded for "%s" namespace.' % (self.event, self.namespace)
 
 
-class InvalidWebSocketHandlerInstanceError(TornadoWebSocketsError, ValueError):
+class InvalidInstanceError(TornadoWebSocketsError, ValueError):
     """
-        Exception thrown when :meth:`WebSocket.emit() <tornado_websockets.websocket.WebSocket.emit>` method could not
-        find a valid WebSocketHandler instance.
+        Exception thrown when an instance is not the expected one.
 
-        * ``obj`` - actual instance which try to stealing WebSocketHandler identity.
+        * ``actual_instance`` - actual instance which is trying to appear as ``expected_instance_name``.
+        * ``expected_instance_name`` - name of expected instance.
     """
 
-    def __init__(self, obj):
-        self.obj = obj
-        super(InvalidWebSocketHandlerInstanceError, self).__init__(obj)
+    def __init__(self, actual_instance, expected_instance_name):
+        self.actual_instance = actual_instance
+        self.expected_instance_name = expected_instance_name
+        super(InvalidInstanceError, self).__init__(actual_instance, expected_instance_name)
 
     def __str__(self):
-        return 'Expected instance of WebSocketHandler, got "%s" instead.' % repr(self.obj)
+        return 'Expected instance of "%s", got "%s" instead.' % (
+            self.expected_instance_name, repr(self.actual_instance)
+        )
 
 
 class EmitHandlerError(TornadoWebSocketsError):
@@ -59,7 +62,7 @@ class EmitHandlerError(TornadoWebSocketsError):
 
 class NotCallableError(TornadoWebSocketsError):
     """
-        Exception thrown when an user try to use a decorator on a non-callable thing
+        Exception thrown when an user try to use a decorator on a non-callable thing.
 
         * ``thing`` - « The Thing ».
     """
