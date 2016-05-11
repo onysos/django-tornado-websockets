@@ -1,10 +1,9 @@
-import inspect
-
 from six import string_types
 
-import tornado_websockets.exceptions
-import tornado_websockets.websockethandler
 import tornado_websockets.tornadowrapper
+import tornado_websockets.websockethandler
+from tornado_websockets.exceptions import *
+
 
 class WebSocket(object):
     """
@@ -33,13 +32,13 @@ class WebSocket(object):
             raise ValueError('WebSocket.on decorator take at least one argument.')
 
         if not callable(args[0]):
-            raise tornado_websockets.exceptions.NotCallableError(args[0])
+            raise NotCallableError(args[0])
 
         event = args[0].__name__
         callback = args[0]
 
         if self.events.get(event) is not None:
-            raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(event, self.namespace)
+            raise WebSocketEventAlreadyBinded(event, self.namespace)
 
         print('-- Binding "%s" event for "%s" namespace with callback "%s"' % (event, self.namespace, callback))
         self.events[event] = callback
@@ -49,11 +48,11 @@ class WebSocket(object):
         print('-- WebSocket.emit(%s, %s)' % (event, data))
 
         if not self.handlers:
-            raise tornado_websockets.exceptions.EmitHandlerError(event, self.data)
+            raise EmitHandlerError(event, data)
 
         for handler in self.handlers:
             if not isinstance(handler, tornado_websockets.websockethandler.WebSocketHandler):
-                raise tornado_websockets.exceptions.InvalidInstanceError(handler)
+                raise InvalidWebSocketHandlerInstanceError(handler)
 
             if isinstance(data, string_types):
                 data = {'message': data}

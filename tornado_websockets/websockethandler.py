@@ -7,8 +7,8 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-import tornado_websockets.exceptions
 import tornado_websockets.websocket
+from tornado_websockets.exceptions import *
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -18,7 +18,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def initialize(self, websocket):
 
         if not isinstance(websocket, tornado_websockets.websocket.WebSocket):
-            raise tornado_websockets.exceptions.InvalidInstanceError(
+            raise InvalidWebSocketHandlerInstanceError(
                 '"websocket" parameter from "WebSocketHandlerWrapper.initialize" method '
                 'should be an instance of "tornado_websockets.WebSocket", got "%s" instead' % repr(websocket))
 
