@@ -14,7 +14,7 @@ class TornadoWrapper:
     """
         Wrapper for Tornado application and server handling.
         With this class, you can access to Tornado app, handlers and settings everywhere in your code (it's really
-        useful for runtornado command and WebSockets)
+        useful when you run `runtornado` management command and work with WebSockets).
     """
 
     tornado_app = None
@@ -29,7 +29,7 @@ class TornadoWrapper:
     @classmethod
     def start_app(cls, tornado_handlers, tornado_settings):
         """
-            Initialize the Tornado web application with given handlers and settings
+            Initialize the Tornado web application with given handlers and settings.
 
             :param tornado_handlers: Handlers (route) for Tornado
             :param tornado_settings: Settings for Tornado
@@ -47,13 +47,13 @@ class TornadoWrapper:
     @classmethod
     def listen(cls, tornado_port):
         """
-            Start the Tornado HTTP server on given port
+            Start the Tornado HTTP server on given port.
 
             :param tornado_port: Port to listen
             :type tornado_port: int
             :return: None
 
-            .. todo:: Add support for HTTPS server
+            .. todo:: Add support for HTTPS server.
         """
         cls.tornado_port = tornado_port
         tornado_server = tornado.httpserver.HTTPServer(cls.tornado_app)
@@ -62,7 +62,7 @@ class TornadoWrapper:
     @classmethod
     def loop(cls):
         """
-            Run Tornado main loop and display configuration about Tornado handlers and settings
+            Run Tornado main loop and display configuration about Tornado handlers and settings.
 
             :return: None
         """
@@ -77,8 +77,8 @@ class TornadoWrapper:
     @classmethod
     def add_handlers(cls, handlers):
         """
-            Add an handler to Tornado app if it's defined, otherwise it's add this handler to the
-            TornadoWrapper.tornado_handlers list
+            Add an handler to Tornado app if it's defined, otherwise it add this handler to the
+            TornadoWrapper.tornado_handlers list.
 
             :param handlers: Handlers to add
             :type handlers: list
