@@ -82,6 +82,8 @@ Functions and class methods **should take two named parameters**:
             print('Catch "my_other_event" from a client')
             print('And same as before, I know that this client is using this websocket connection: %s' % socket)
 
+.. _emit-an-event:
+
 Emit an event
 ^^^^^^^^^^^^^
 

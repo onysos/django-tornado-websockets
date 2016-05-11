@@ -16,6 +16,10 @@ WebSocketHandler
 .. automodule:: tornado_websockets.websockethandler
 
     .. autoclass:: WebSocketHandler
+    .. automethod:: WebSocketHandler.initialize
+    .. automethod:: WebSocketHandler.on_message
+    .. automethod:: WebSocketHandler.on_close
+    .. automethod:: WebSocketHandler.emit
 
 TornadoWrapper
 --------------
@@ -35,6 +39,6 @@ Exceptions
 
     .. autoexception:: TornadoWebSocketsError
     .. autoexception:: EmitHandlerError
-    .. autoexception:: InvalidWebSocketHandlerInstanceError
+    .. autoexception:: InvalidInstanceError
     .. autoexception:: NotCallableError
     .. autoexception:: WebSocketEventAlreadyBinded
