@@ -1,3 +1,5 @@
+# coding: utf-8
+
 class TornadoWebSocketsError(Exception):
     """
         Base exception of all django-tornado-websockets exceptions.
