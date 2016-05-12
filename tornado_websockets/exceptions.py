@@ -1,5 +1,6 @@
 # coding: utf-8
 
+
 class TornadoWebSocketsError(Exception):
     """
         Base exception of all django-tornado-websockets exceptions.
@@ -24,7 +25,7 @@ class WebSocketEventAlreadyBinded(TornadoWebSocketsError, NameError):
         return 'The event "%s" is already binded for "%s" namespace.' % (self.event, self.namespace)
 
 
-class InvalidInstanceError(TornadoWebSocketsError, ValueError):
+class InvalidInstanceError(TornadoWebSocketsError, TypeError):
     """
         Exception thrown when an instance is not the expected one.
 
@@ -59,7 +60,7 @@ class EmitHandlerError(TornadoWebSocketsError):
 
     def __str__(self):
         return 'Can not emit "%s" event in "%s" namespace, please use emit() in a function or class method' \
-               ' decorated by @WebSocket.on.' % (self.event, self.namespace)
+               ' decorated by @WebSocket.on decorator.' % (self.event, self.namespace)
 
 
 class NotCallableError(TornadoWebSocketsError):
