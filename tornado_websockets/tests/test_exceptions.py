@@ -65,7 +65,7 @@ class TestExceptions(unittest.TestCase):
 
         self.assertEqual(
             str(e.exception),
-            'Can not emit "%s" event in "%s" namespace, please use emit() in a function or class method decorated by'
+            'Can not emit "%s" event in "%s" namespace, emit() should be used in a function or class method decorated by'
             ' @WebSocket.on decorator.' % (event, namespace)
         )
 
@@ -82,5 +82,5 @@ class TestExceptions(unittest.TestCase):
 
         self.assertEqual(
             str(e.exception),
-            'You used @WebSocket.on decorator on a thing that is not callable, got: "%s".' % thing
+            'Used @WebSocket.on decorator on a thing that is not callable, got: "%s".' % thing
         )

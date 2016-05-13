@@ -15,9 +15,12 @@ from tornado.testing import AsyncHTTPTestCase, gen_test
 from tornado.httpclient import HTTPError
 from tornado.escape import json_decode, json_encode
 
+from tornado_websockets.exceptions import NotCallableError, WebSocketEventAlreadyBinded, EmitHandlerError, \
+    InvalidInstanceError
 from tornado_websockets.tests.app_test import app_test_ws
 from tornado_websockets.tests.app_counter import app_counter
 from tornado_websockets.tornadowrapper import TornadoWrapper
+from tornado_websockets.websocket import WebSocket
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -104,7 +107,148 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(e.exception.message, 'Not Found')
         self.assertEqual(e.exception.code, 404)
 
-    # --- Tests for WSTestApp
+    @gen_test
+    def test_websocket_namespace(self):
+        ws1 = WebSocket('/prefixed_with_slash')
+        ws2 = WebSocket('not_prefixed_with_slash')
+        ws3 = WebSocket('   /prefixed_with_slash_with_spaces    ')
+        ws4 = WebSocket('   not_prefixed_with_slash             ')
+
+        self.assertEqual(ws1.namespace, '/prefixed_with_slash')
+        self.assertEqual(ws2.namespace, '/not_prefixed_with_slash')
+        self.assertEqual(ws3.namespace, '/prefixed_with_slash_with_spaces')
+        self.assertEqual(ws4.namespace, '/not_prefixed_with_slash')
+
+    @gen_test
+    def test_websocket_decorator_on_on_not_callable(self):
+        ws = WebSocket('/abc')
+
+        with self.assertRaises(NotCallableError) as e:
+            @ws.on('my_event')
+            def my_method():
+                pass
+
+        self.assertEqual(e.exception.thing, 'my_event')
+        self.assertEqual(
+            str(e.exception),
+            'Used @WebSocket.on decorator on a thing that is not callable, got: "%s".' % 'my_event'
+        )
+
+    @gen_test
+    def test_websocket_decorator_on_on_callable(self):
+        ws = WebSocket('/abc')
+
+        @ws.on
+        def my_method():
+            pass
+
+    @gen_test
+    def test_websocket_decorator_on_with_already_binded_event(self):
+        ws = WebSocket('/abc')
+
+        @ws.on
+        def my_method():
+            pass
+
+        with self.assertRaises(WebSocketEventAlreadyBinded) as e:
+            @ws.on
+            def my_method():
+                pass
+
+        self.assertEqual(e.exception.event, 'my_method')
+        self.assertEqual(e.exception.namespace, '/abc')
+        self.assertEqual(
+            str(e.exception),
+            'The event "%s" is already binded for "%s" namespace.' % ('my_method', '/abc')
+        )
+
+    @gen_test
+    def test_websocket_emit_outside_on_decorator(self):
+        ws = WebSocket('/abc')
+
+        with self.assertRaises(EmitHandlerError) as e:
+            ws.emit('my_event', 'my_message')
+
+        self.assertEqual(e.exception.event, 'my_event')
+        self.assertEqual(e.exception.namespace, '/abc')
+        self.assertEqual(
+            str(e.exception),
+            'Can not emit "%s" event in "%s" namespace, emit() should be used in a function or class method'
+            ' decorated by @WebSocket.on decorator.' % ('my_event', '/abc')
+        )
+
+    @gen_test
+    def test_websocket_emit_with_bad_handlers(self):
+        ws = WebSocket('/abc')
+        ws.handlers = ['not_an_handler']
+
+        with self.assertRaises(InvalidInstanceError) as e:
+            ws.emit('my_event')
+
+        self.assertEqual(e.exception.actual_instance, 'not_an_handler')
+        self.assertEqual(e.exception.expected_instance_name, 'tornado_websockets.websockethandler.WebSocketHandler')
+        self.assertEqual(
+            str(e.exception),
+            'Expected instance of "%s", got "%s" instead.' % (
+                'tornado_websockets.websockethandler.WebSocketHandler', repr('not_an_handler')
+            )
+        )
+
+    @gen_test
+    def test_websocket_emit_with_bad_parameter_event(self):
+        ws = WebSocket('/abc')
+        ws.handlers = ['not_an_handler']
+
+        with self.assertRaises(TypeError) as e:
+            ws.emit(12345)
+
+        self.assertEqual(str(e.exception), 'Event should be a string.')
+
+    @gen_test
+    def test_websocket_emit_with_good_parameter_event(self):
+        ws = WebSocket('/abc')
+        ws.handlers = ['not_an_handler']
+
+        # It raises an InvalidInstanceError because we override ws's handlers to dodge EmitHandlerError exception,
+        # and we can't get a real WebSocketHandler to use with this ws. But it works
+        with self.assertRaises(InvalidInstanceError) as e:
+            ws.emit('my_event')
+
+    @gen_test
+    def test_websocket_emit_with_bad_parameter_data(self):
+        ws = WebSocket('/abc')
+        ws.handlers = ['handler']
+
+        with self.assertRaises(TypeError) as e:
+            ws.emit('my_event', 123)
+
+        self.assertEqual(str(e.exception), 'Data should be a string or a dictionary.')
+
+    @gen_test
+    def test_websocket_emit_with_good_parameter_data(self):
+        ws = WebSocket('/abc')
+        ws.handlers = ['not_an_handler']
+
+        # It raises an InvalidInstanceError because we override ws's handlers to dodge EmitHandlerError exception,
+        # and we can't get a real WebSocketHandler to use with this ws. But it works.
+        with self.assertRaises(InvalidInstanceError):
+            ws.emit('my_event')
+
+        with self.assertRaises(InvalidInstanceError):
+            ws.emit('my_event', {'a': 'dictionary'})
+
+        with self.assertRaises(InvalidInstanceError):
+            ws.emit('my_event', 'a_string')
+
+
+class WSTestAppTest(WebSocketBaseTestCase):
+    def get_app(self):
+        self.close_future = Future()
+        TornadoWrapper.start_app()
+        return TornadoWrapper.tornado_app
+
+    def tearDown(self):
+        pass
 
     @gen_test
     def test_testapp_send_invalid_json(self):
@@ -207,10 +351,17 @@ class WebSocketTest(WebSocketBaseTestCase):
                     'a_key': 'a_value'
                 }
             }
-
         })
 
-    # --- Tests for WSCounterApp
+
+class WSCounterAppTest(WebSocketBaseTestCase):
+    def get_app(self):
+        self.close_future = Future()
+        TornadoWrapper.start_app()
+        return TornadoWrapper.tornado_app
+
+    def tearDown(self):
+        pass
 
     @gen_test
     def test_counterapp_emit_connection(self):
