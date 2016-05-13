@@ -55,11 +55,7 @@ class Command(BaseCommand, AppConfig):
             tornado_port = self.default_port
 
         # 3 - Set-up handlers and settings for Tornado
-
-        # Handlers
         tornado_handlers = tornado_settings.get('handlers', self.default_handlers)
-
-        # Settings
         tornado_settings = tornado_settings.get('settings', {})
 
         # 4 - Run Tornado
