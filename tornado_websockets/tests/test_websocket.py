@@ -251,7 +251,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
         pass
 
     @gen_test
-    def test_testapp_send_invalid_json(self):
+    def test_send_invalid_json(self):
         ws = yield self.ws_connect('/ws/test')
 
         yield ws.write_message('Not a JSON string.')
@@ -267,7 +267,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
         yield ws.write_message(json_encode({'event': 'close'}))
 
     @gen_test
-    def test_testapp_send_without_event(self):
+    def test_send_without_event(self):
         ws = yield self.ws_connect('/ws/test')
 
         yield ws.write_message(json_encode({
@@ -283,7 +283,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_testapp_send_with_not_registered_event(self):
+    def test_send_with_not_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
 
         yield ws.write_message(json_encode({
@@ -299,7 +299,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_testapp_send_with_registered_event(self):
+    def test_send_with_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
 
         yield ws.write_message(json_encode({
@@ -316,7 +316,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_testapp_send_with_invalid_data_format(self):
+    def test_send_with_invalid_data_format(self):
         ws = yield self.ws_connect('/ws/test')
 
         yield ws.write_message(json_encode({
@@ -332,7 +332,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_testapp_send_with_registered_event(self):
+    def test_send_with_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
 
         yield ws.write_message(json_encode({
@@ -364,7 +364,7 @@ class WSCounterAppTest(WebSocketBaseTestCase):
         pass
 
     @gen_test
-    def test_counterapp_emit_connection(self):
+    def test_emit_connection(self):
         ws = yield self.ws_connect('/ws/counter')
 
         yield ws.write_message(json_encode({
@@ -381,7 +381,7 @@ class WSCounterAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_counterapp_emit_setup_without_counter_value(self):
+    def test_emit_setup_without_counter_value(self):
         ws = yield self.ws_connect('/ws/counter')
 
         yield ws.write_message(json_encode({
@@ -398,7 +398,7 @@ class WSCounterAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_counterapp_emit_setup_with_bad_counter_value_type(self):
+    def test_emit_setup_with_bad_counter_value_type(self):
         ws = yield self.ws_connect('/ws/counter')
 
         yield ws.write_message(json_encode({
@@ -418,7 +418,7 @@ class WSCounterAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_counterapp_emit_setup_with_good_value(self):
+    def test_emit_setup_with_good_value(self):
         counter_value = 50
         ws = yield self.ws_connect('/ws/counter')
 
