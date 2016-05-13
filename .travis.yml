@@ -27,7 +27,6 @@ install:
 script:
   - coverage run manage.py test
 
-
 # Report to coveralls
 after_success:
   - coveralls
