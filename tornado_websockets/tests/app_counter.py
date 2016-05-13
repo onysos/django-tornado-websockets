@@ -46,9 +46,5 @@ class AppCounter(object):
             'counter_value': self.counter
         })
 
-    @app_counter_ws.on
-    def close(self, socket, data):
-        print('-- WebSocket is closed')
-
 
 app_counter = AppCounter()
