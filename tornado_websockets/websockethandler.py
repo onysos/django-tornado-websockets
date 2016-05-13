@@ -96,9 +96,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         print('-- Closing WebSocket "%s" for "%s" handler.')
         self.websocket.handlers.remove(self)
 
-    def on_finish(self):
-        print('qsdqsd')
-
     def emit(self, event, data):
         """
             Sends a given event/data combinaison to the client of this WebSocket.

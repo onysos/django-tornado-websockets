@@ -46,7 +46,7 @@ class WebSocket(object):
         """
 
         if not callable(callback):
-            raise NotCallableError(callback[0])
+            raise NotCallableError(callback)
 
         event = callback.__name__
 
@@ -57,7 +57,7 @@ class WebSocket(object):
         self.events[event] = callback
         return callback
 
-    def emit(self, event, data):
+    def emit(self, event, data=None):
         """
             Send an event/data dictionnary to all clients connected to your WebSocket instance.
             To see all ways to emit an event, please read « :ref:`emit-an-event` » section.
@@ -76,10 +76,19 @@ class WebSocket(object):
                 :class:`~tornado_websockets.exceptions.EmitHandlerError` exception.
         """
 
+        if not data:
+            data = dict()
+
         print('-- WebSocket.emit(%s, %s)' % (event, data))
 
+        if not isinstance(event, string_types):
+            raise TypeError('Event should be a string.')
+
+        if not isinstance(data, string_types) and not isinstance(data, dict):
+            raise TypeError('Data should be a string or a dictionary.')
+
         if not self.handlers:
-            raise EmitHandlerError(event, data)
+            raise EmitHandlerError(event, self.namespace)
 
         for handler in self.handlers:
             if not isinstance(handler, tornado_websockets.websockethandler.WebSocketHandler):

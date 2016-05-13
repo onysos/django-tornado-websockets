@@ -59,7 +59,7 @@ class EmitHandlerError(TornadoWebSocketsError):
         super(EmitHandlerError, self).__init__(event, namespace)
 
     def __str__(self):
-        return 'Can not emit "%s" event in "%s" namespace, please use emit() in a function or class method' \
+        return 'Can not emit "%s" event in "%s" namespace, emit() should be used in a function or class method' \
                ' decorated by @WebSocket.on decorator.' % (self.event, self.namespace)
 
 
@@ -75,4 +75,4 @@ class NotCallableError(TornadoWebSocketsError):
         super(NotCallableError, self).__init__(thing)
 
     def __str__(self):
-        return 'You used @WebSocket.on decorator on a thing that is not callable, got: "%s".' % self.thing
+        return 'Used @WebSocket.on decorator on a thing that is not callable, got: "%s".' % self.thing
