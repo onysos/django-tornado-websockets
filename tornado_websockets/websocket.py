@@ -53,7 +53,7 @@ class WebSocket(object):
         if self.events.get(event) is not None:
             raise WebSocketEventAlreadyBinded(event, self.namespace)
 
-        print('-- Binding "%s" event for "%s" namespace with callback "%s"' % (event, self.namespace, callback))
+        # print('-- Binding "%s" event for "%s" namespace with callback "%s"' % (event, self.namespace, callback))
         self.events[event] = callback
         return callback
 
@@ -79,7 +79,7 @@ class WebSocket(object):
         if not data:
             data = dict()
 
-        print('-- WebSocket.emit(%s, %s)' % (event, data))
+        # print('-- WebSocket.emit(%s, %s)' % (event, data))
 
         if not isinstance(event, string_types):
             raise TypeError('Event should be a string.')

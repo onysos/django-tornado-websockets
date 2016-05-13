@@ -50,7 +50,8 @@ class Command(BaseCommand, AppConfig):
         test_mode = options.get('test_mode')
 
         if test_mode:
-            self.stdout.write('== Running in test mode, Tornado server will not be started')
+            # self.stdout.write('== Running in test mode, Tornado server will not be started')
+            pass
 
         # 1 - Read Tornado settings from Django settings file
         try:

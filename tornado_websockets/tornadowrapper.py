@@ -82,11 +82,11 @@ class TornadoWrapper:
 
             :return: None
         """
-        print('== Using port %s' % cls.tornado_port)
-        print('== Using handlers:')
-        pp.pprint(cls.tornado_app.handlers)
-        print('== Using settings:')
-        pp.pprint(cls.tornado_app.settings)
+        # print('== Using port %s' % cls.tornado_port)
+        # print('== Using handlers:')
+        # pp.pprint(cls.tornado_app.handlers)
+        # print('== Using settings:')
+        # pp.pprint(cls.tornado_app.settings)
 
         tornado.ioloop.IOLoop.instance().start()
 
@@ -116,8 +116,8 @@ class TornadoWrapper:
             raise TypeError('Expected a list or a tuple for handlers.')
 
         if not TornadoWrapper.tornado_app:
-            print('== Prepare new handlers for Tornado application:')
-            pp.pprint(handlers)
+            # print('== Prepare new handlers for Tornado application:')
+            # pp.pprint(handlers)
 
             # ``cls.handlers = handlers + cls.handlers`` and not ``cls.handlers += handlers``,
             # see `TornadoWrapper.start_app` source to know why.
@@ -125,8 +125,8 @@ class TornadoWrapper:
 
             return cls.handlers
 
-        print('== Adding handlers to already running Tornado application. New handlers are:')
+        # print('== Adding handlers to already running Tornado application. New handlers are:')
+        # pp.pprint(cls.tornado_app.handlers)
         TornadoWrapper.tornado_app.add_handlers('.*', handlers)
-        pp.pprint(cls.tornado_app.handlers)
 
         return cls.tornado_app.handlers

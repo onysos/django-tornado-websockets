@@ -23,7 +23,7 @@ from tornado_websockets.tornadowrapper import TornadoWrapper
 from tornado_websockets.websocket import WebSocket
 
 pp = pprint.PrettyPrinter(indent=2)
-SLEEPING_TIME = 2
+SLEEPING_TIME = 0
 
 import time
 
