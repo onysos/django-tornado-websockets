@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'Django>=1.8',
         'tornado>=4.3',
-        'tox>=2.3',
+        'six>=1.10',
     ],
     include_package_data=True,
     license='GPLv3 License',

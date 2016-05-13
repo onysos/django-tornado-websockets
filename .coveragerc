@@ -3,9 +3,10 @@ source =
     tornado_websockets
 
 omit =
-    tornado_websockets/management/*
-    tornado_websockets/tests/test_websocket.py
+    tornado_websockets/__init__.py
+    tornado_websockets/**/__init__.py
+    tornado_websockets/tests/test_*.py
 
 [report]
 exclude_lines =
-    raise NotImplementedError
+    if not test_mode:

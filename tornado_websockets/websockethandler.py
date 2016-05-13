@@ -47,7 +47,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         try:
             message = tornado.escape.json_decode(message)
-            namespace = message.get('namespace')
             event = message.get('event')
             data = message.get('data')
         except ValueError:
@@ -58,16 +57,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.emit_error('There is no event in this JSON.')
             return
         elif self.websocket.events.get(event) is None:
-            self.emit_error('The event "%s" does not exist for websocket "%s"' % (event, self.websocket))
+            self.emit_error('The event "%s" does not exist for websocket "%s".' % (event, self.websocket))
             return
 
         if not data:
             data = {}
-        elif data and not isinstance(data, dict):
-            self.emit_error('The data should be a dictionary (JavaScript object).')
+        elif not isinstance(data, dict):
+            self.emit_error('The data should be a dictionary.')
             return
 
-        # print('NAMESPACE: %s' % namespace)
         # print('EVENT: %s' % event)
         # print('DATA: %s' % data)
 
@@ -87,7 +85,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         # print('CALLBACK: %s' % callback)
         # print('KWARGS: %s' % kwargs)
 
-        print('-- Triggering "%s" event from "%s" namespace' % (event, namespace))
+        # print('-- Triggering "%s" event from "%s" namespace' % (event, self.websocket.namespace))
 
         return callback(**kwargs)
 
@@ -95,7 +93,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
             Called when the WebSocket is closed, delete the link between this object and its WebSocket.
         """
-
+        # print('-- Closing WebSocket "%s" for "%s" handler.')
         self.websocket.handlers.remove(self)
 
     def emit(self, event, data):
@@ -124,5 +122,5 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             :type message: str
         """
 
-        print('-- Error: %s' % message)
+        # print('-- Error: %s' % message)
         return self.emit('error', {'message': message})
