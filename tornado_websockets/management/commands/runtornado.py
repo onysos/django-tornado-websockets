@@ -19,6 +19,11 @@ if django.VERSION[1] > 5:
     django.setup()
 
 
+class ReturnValueForTestMode(Exception):
+    def __init__(self, value):
+        self.value = value
+
+
 class Command(BaseCommand, AppConfig):
     help = 'Run Tornado web server with Django and WebSockets support'
 
@@ -29,36 +34,61 @@ class Command(BaseCommand, AppConfig):
 
         self.default_port = 8000
 
-        self.default_handlers = [
-            ('.*', tornado.web.FallbackHandler, dict(fallback=self.django))
-        ]
-
     def add_arguments(self, parser):
         parser.add_argument('port', nargs='?', help='Optional port number')
+        parser.add_argument(
+            '--test-mode',
+            action='store_true',
+            dest='test_mode',
+            default=False,
+            help='Enable test mode and do not run the Tornado server'
+        )
+
         pass
 
     def handle(self, *args, **options):
+        test_mode = options.get('test_mode')
+
+        if test_mode:
+            self.stdout.write('== Running in test mode, Tornado server will not be started')
+
         # 1 - Read Tornado settings from Django settings file
         try:
-            tornado_settings = settings.TORNADO
-        except AttributeError:
-            tornado_settings = {}
-            self.stderr.write(
-                "Can't read Tornado settings from your settings file, you should set settings.TORNADO.")
+            tornado_configuration = settings.TORNADO
+        except AttributeError as e:
+            tornado_configuration = {}
+
+        if not tornado_configuration:
+            tornado_configuration = {}
+
+        if test_mode is 'configuration':
+            raise ReturnValueForTestMode(tornado_configuration)
 
         # 2 - Get port for Tornado
         tornado_port = options.get('port')
 
         if not tornado_port:
-            tornado_port = tornado_settings.get('port')
+            tornado_port = tornado_configuration.get('port')
         if not tornado_port:
             tornado_port = self.default_port
 
-        # 3 - Set-up handlers and settings for Tornado
-        tornado_handlers = tornado_settings.get('handlers', self.default_handlers)
-        tornado_settings = tornado_settings.get('settings', {})
+        if test_mode is 'port':
+            raise ReturnValueForTestMode(tornado_port)
 
-        # 4 - Run Tornado
-        TornadoWrapper.start_app(tornado_handlers, tornado_settings)
-        TornadoWrapper.listen(tornado_port)
-        TornadoWrapper.loop()
+        # 4 - Set-up Tornado handlers
+        tornado_handlers = tornado_configuration.get('handlers', [])
+
+        if test_mode is 'handlers':
+            raise ReturnValueForTestMode(tornado_handlers)
+
+        # 5 - Set up Tornado settings
+        tornado_settings = tornado_configuration.get('settings', {})
+
+        if test_mode is 'settings':
+            raise ReturnValueForTestMode(tornado_settings)
+
+        # 6 - Run Tornado
+        if not test_mode:
+            TornadoWrapper.start_app(tornado_handlers, tornado_settings)
+            TornadoWrapper.listen(tornado_port)
+            TornadoWrapper.loop()
