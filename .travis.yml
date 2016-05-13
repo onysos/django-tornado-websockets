@@ -25,7 +25,8 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then travis_retry pip install 'coverage<4.0'; fi
 
 # Command to run tests, e.g. python setup.py test
-script:
+script:    
+  - export ASYNC_TEST_TIMEOUT=15
   - coverage run manage.py test
 
 # Report to coveralls
