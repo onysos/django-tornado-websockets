@@ -23,6 +23,9 @@ from tornado_websockets.tornadowrapper import TornadoWrapper
 from tornado_websockets.websocket import WebSocket
 
 pp = pprint.PrettyPrinter(indent=2)
+SLEEPING_TIME = 2
+
+import time
 
 try:
     import tornado.websocket  # noqa
@@ -93,6 +96,8 @@ class WebSocketTest(WebSocketBaseTestCase):
         ws_test = yield self.ws_connect('/ws/counter')
         ws_counter = yield self.ws_connect('/ws/counter')
 
+        time.sleep(SLEEPING_TIME)
+
         # Useless, but just in case of. :-))
         self.assertEqual(None, ws_test.close_code)
         self.assertEqual(None, ws_test.close_reason)
@@ -104,6 +109,8 @@ class WebSocketTest(WebSocketBaseTestCase):
         with self.assertRaises(HTTPError) as e:
             yield self.ws_connect('/ws/i/do/not/exist')
 
+        time.sleep(SLEEPING_TIME)
+
         self.assertEqual(e.exception.message, 'Not Found')
         self.assertEqual(e.exception.code, 404)
 
@@ -114,6 +121,8 @@ class WebSocketTest(WebSocketBaseTestCase):
         ws3 = WebSocket('   /prefixed_with_slash_with_spaces    ')
         ws4 = WebSocket('   not_prefixed_with_slash             ')
 
+        time.sleep(SLEEPING_TIME)
+
         self.assertEqual(ws1.namespace, '/prefixed_with_slash')
         self.assertEqual(ws2.namespace, '/not_prefixed_with_slash')
         self.assertEqual(ws3.namespace, '/prefixed_with_slash_with_spaces')
@@ -122,6 +131,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     @gen_test
     def test_websocket_decorator_on_on_not_callable(self):
         ws = WebSocket('/abc')
+
+        time.sleep(SLEEPING_TIME)
 
         with self.assertRaises(NotCallableError) as e:
             @ws.on('my_event')
@@ -138,6 +149,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_websocket_decorator_on_on_callable(self):
         ws = WebSocket('/abc')
 
+        time.sleep(SLEEPING_TIME)
+
         @ws.on
         def my_method():
             pass
@@ -145,6 +158,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     @gen_test
     def test_websocket_decorator_on_with_already_binded_event(self):
         ws = WebSocket('/abc')
+
+        time.sleep(SLEEPING_TIME)
 
         @ws.on
         def my_method():
@@ -166,6 +181,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_websocket_emit_outside_on_decorator(self):
         ws = WebSocket('/abc')
 
+        time.sleep(SLEEPING_TIME)
+
         with self.assertRaises(EmitHandlerError) as e:
             ws.emit('my_event', 'my_message')
 
@@ -181,6 +198,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_websocket_emit_with_bad_handlers(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
+
+        time.sleep(SLEEPING_TIME)
 
         with self.assertRaises(InvalidInstanceError) as e:
             ws.emit('my_event')
@@ -199,6 +218,8 @@ class WebSocketTest(WebSocketBaseTestCase):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
 
+        time.sleep(SLEEPING_TIME)
+
         with self.assertRaises(TypeError) as e:
             ws.emit(12345)
 
@@ -208,6 +229,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_websocket_emit_with_good_parameter_event(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
+
+        time.sleep(SLEEPING_TIME)
 
         # It raises an InvalidInstanceError because we override ws's handlers to dodge EmitHandlerError exception,
         # and we can't get a real WebSocketHandler to use with this ws. But it works
@@ -219,6 +242,8 @@ class WebSocketTest(WebSocketBaseTestCase):
         ws = WebSocket('/abc')
         ws.handlers = ['handler']
 
+        time.sleep(SLEEPING_TIME)
+
         with self.assertRaises(TypeError) as e:
             ws.emit('my_event', 123)
 
@@ -228,6 +253,8 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_websocket_emit_with_good_parameter_data(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
+
+        time.sleep(SLEEPING_TIME)
 
         # It raises an InvalidInstanceError because we override ws's handlers to dodge EmitHandlerError exception,
         # and we can't get a real WebSocketHandler to use with this ws. But it works.
@@ -254,7 +281,9 @@ class WSTestAppTest(WebSocketBaseTestCase):
     def test_send_invalid_json(self):
         ws = yield self.ws_connect('/ws/test')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message('Not a JSON string.')
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -270,9 +299,11 @@ class WSTestAppTest(WebSocketBaseTestCase):
     def test_send_without_event(self):
         ws = yield self.ws_connect('/ws/test')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'json': 'I am a JSON'
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -286,9 +317,11 @@ class WSTestAppTest(WebSocketBaseTestCase):
     def test_send_with_not_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'not_registered_event'
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -302,9 +335,11 @@ class WSTestAppTest(WebSocketBaseTestCase):
     def test_send_with_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'existing_event'
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -319,9 +354,11 @@ class WSTestAppTest(WebSocketBaseTestCase):
     def test_send_with_invalid_data_format(self):
         ws = yield self.ws_connect('/ws/test')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'existing_event', 'data': 'not a dictionary'
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -335,12 +372,14 @@ class WSTestAppTest(WebSocketBaseTestCase):
     def test_send_with_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'existing_event',
             'data': {
                 'a_key': 'a_value'
             }
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -367,9 +406,11 @@ class WSCounterAppTest(WebSocketBaseTestCase):
     def test_emit_connection(self):
         ws = yield self.ws_connect('/ws/counter')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'connection'
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -384,9 +425,11 @@ class WSCounterAppTest(WebSocketBaseTestCase):
     def test_emit_setup_without_counter_value(self):
         ws = yield self.ws_connect('/ws/counter')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'setup'
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -401,12 +444,14 @@ class WSCounterAppTest(WebSocketBaseTestCase):
     def test_emit_setup_with_bad_counter_value_type(self):
         ws = yield self.ws_connect('/ws/counter')
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'setup',
             'data': {
                 'counter_value': 'not_an_integer'
             }
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -417,21 +462,24 @@ class WSCounterAppTest(WebSocketBaseTestCase):
             }
         })
 
-    @gen_test
+    @gen_test(timeout=20)
     def test_emit_setup_with_good_value(self):
         counter_value = 50
         ws = yield self.ws_connect('/ws/counter')
+
 
         # Tests for first client
 
         self.assertEqual(app_counter.counter, 0)
 
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'setup',
             'data': {
                 'counter_value': counter_value
             }
         }))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
@@ -449,7 +497,9 @@ class WSCounterAppTest(WebSocketBaseTestCase):
         counter_value += 1  # 51
         ws2 = yield self.ws_connect('/ws/counter')
 
+        time.sleep(SLEEPING_TIME)
         yield ws2.write_message(json_encode({'event': 'increment'}))
+        time.sleep(SLEEPING_TIME)
 
         response = yield ws2.read_message()
         self.assertDictEqual(json_decode(response), {
