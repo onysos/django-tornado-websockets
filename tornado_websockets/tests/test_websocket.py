@@ -85,6 +85,7 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase):
 class WebSocketTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
+        TornadoWrapper.reset()
         TornadoWrapper.start_app()
         return TornadoWrapper.tornado_app
 
@@ -271,6 +272,7 @@ class WebSocketTest(WebSocketBaseTestCase):
 class WSTestAppTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
+        TornadoWrapper.reset()
         TornadoWrapper.start_app()
         return TornadoWrapper.tornado_app
 
@@ -396,6 +398,7 @@ class WSTestAppTest(WebSocketBaseTestCase):
 class WSCounterAppTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
+        TornadoWrapper.reset()
         TornadoWrapper.start_app()
         return TornadoWrapper.tornado_app
 
