@@ -1,6 +1,6 @@
 from tornado_websockets.websocket import WebSocket
 
-app_test_ws = WebSocket('/test')
+app_test_ws = WebSocket('/test', add_to_handlers=False)
 
 
 class AppTest(object):

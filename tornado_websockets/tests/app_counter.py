@@ -2,7 +2,7 @@ from six import integer_types
 
 from tornado_websockets.websocket import WebSocket
 
-app_counter_ws = WebSocket('/counter')
+app_counter_ws = WebSocket('/counter', add_to_handlers=False)
 
 
 class AppCounter(object):
