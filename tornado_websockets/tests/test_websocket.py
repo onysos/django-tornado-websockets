@@ -9,6 +9,10 @@ import os
 import traceback
 
 import time
+
+import sys
+from unittest import skipIf
+
 from tornado.concurrent import Future
 from tornado import gen
 from tornado.escape import json_encode, json_decode
@@ -314,6 +318,25 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
             'event': 'error',
             'data': {
                 'message': 'There is no event in this JSON.',
+            }
+        })
+
+    @skipIf(sys.version_info.major == 2, 'Write error on <socket.[...] object>: [Errno 9] Bad file descriptor')
+    @gen_test
+    def test_send_with_registered_event(self):
+        ws = yield self.ws_connect('/ws/test')
+
+        time.sleep(SLEEPING_TIME)
+        yield ws.write_message(json_encode({
+            'event': 'existing_event'
+        }))
+        time.sleep(SLEEPING_TIME)
+
+        response = yield ws.read_message()
+        self.assertDictEqual(json_decode(response), {
+            'event': 'existing_event',
+            'data': {
+                'message': 'I am "existing_event" from "{}" websocket application.'.format(app_test_ws)
             }
         })
 
