@@ -17,7 +17,7 @@ env:
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-  - pip install python-coveralls pylint
+  - pip install python-coveralls nose pinocchio django_nose
   - pip install -q Django$DJANGO_VERSION --quiet
   - pip install tornado six
   # virtualenv>=14.0.0 has dropped Python 3.2 support
@@ -28,7 +28,7 @@ install:
 # Command to run tests, e.g. python setup.py test
 script:
   - export ASYNC_TEST_TIMEOUT=15
-  - coverage run manage.py test
+  - coverage run manage.py test -v 3
 
 # Report to coveralls
 after_success:

@@ -30,7 +30,7 @@ class TornadoWrapper:
     handlers = []
 
     @classmethod
-    def start_app(cls, tornado_handlers=[], tornado_settings={}):
+    def start_app(cls, tornado_handlers=None, tornado_settings=None):
         """
             Initialize the Tornado web application with given handlers and settings.
 
@@ -40,6 +40,12 @@ class TornadoWrapper:
             :type tornado_settings: dict
             :return: None
         """
+
+        if not tornado_handlers:
+            tornado_handlers = []
+
+        if not tornado_settings:
+            tornado_settings = {}
 
         if not isinstance(tornado_handlers, list):
             raise TypeError('Expected a list for Tornado handlers.')
