@@ -123,13 +123,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Tests
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--with-spec', '--spec-color',
-    '--with-coverage', '--cover-html', '--cover-package=tornado_websockets', '--cover-html-dir=htmlcov/'
-]
-
 # Tornado configuration
 
 TORNADO = {

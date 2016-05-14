@@ -27,7 +27,7 @@ install:
 # Command to run tests, e.g. python setup.py test
 script:
   - export ASYNC_TEST_TIMEOUT=15
-  - coverage run manage.py test
+  - coverage run manage.py test -v 2
 
 # Report to coveralls
 after_success:
