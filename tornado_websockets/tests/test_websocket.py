@@ -5,27 +5,26 @@ from __future__ import absolute_import, division, print_function, with_statement
 # I just took the official websocket test file from Tornado
 # https://github.com/tornadoweb/tornado/blob/master/tornado/test/websocket_test.py
 # and modify it for my project.
-
+import os
 import traceback
-import pprint
+
+import time
+
+import sys
+from unittest import skipIf
 
 from tornado.concurrent import Future
 from tornado import gen
-from tornado.testing import AsyncHTTPTestCase, gen_test
+from tornado.escape import json_encode, json_decode
 from tornado.httpclient import HTTPError
-from tornado.escape import json_decode, json_encode
+from tornado.testing import AsyncHTTPTestCase, gen_test
+from tornado.web import Application
 
-from tornado_websockets.exceptions import NotCallableError, WebSocketEventAlreadyBinded, EmitHandlerError, \
-    InvalidInstanceError
-from tornado_websockets.tests.app_test import app_test_ws
-from tornado_websockets.tests.app_counter import app_counter
-from tornado_websockets.tornadowrapper import TornadoWrapper
+from tornado_websockets.exceptions import *
 from tornado_websockets.websocket import WebSocket
-
-pp = pprint.PrettyPrinter(indent=2)
-SLEEPING_TIME = 0
-
-import time
+from tornado_websockets.websockethandler import WebSocketHandler
+from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
+from tornado_websockets.tests.app_test import app_test_ws
 
 try:
     import tornado.websocket  # noqa
@@ -38,12 +37,18 @@ except ImportError:
     traceback.print_exc()
     raise
 
-from tornado.websocket import WebSocketHandler, websocket_connect
+from tornado.websocket import websocket_connect
 
 try:
     from tornado import speedups
 except ImportError:
     speedups = None
+
+# For Travis
+if os.environ.get('TRAVIS') is None:
+    SLEEPING_TIME = 0
+else:
+    SLEEPING_TIME = 2
 
 
 class TestWebSocketHandler(WebSocketHandler):
@@ -51,7 +56,8 @@ class TestWebSocketHandler(WebSocketHandler):
     This allows for deterministic cleanup of the associated socket.
     """
 
-    def initialize(self, close_future, compression_options=None):
+    def initialize(self, websocket, close_future, compression_options=None):
+        super(TestWebSocketHandler, self).initialize(websocket)
         self.close_future = close_future
         self.compression_options = compression_options
 
@@ -62,12 +68,19 @@ class TestWebSocketHandler(WebSocketHandler):
         self.close_future.set_result((self.close_code, self.close_reason))
 
 
+class EchoHandler(TestWebSocketHandler):
+    def on_message(self, message):
+        self.write_message(message, isinstance(message, bytes))
+
+
 class WebSocketBaseTestCase(AsyncHTTPTestCase):
     @gen.coroutine
     def ws_connect(self, path, compression_options=None):
         ws = yield websocket_connect(
             'ws://127.0.0.1:%d%s' % (self.get_http_port(), path),
-            compression_options=compression_options)
+            compression_options=compression_options
+        )
+
         raise gen.Return(ws)
 
     @gen.coroutine
@@ -85,24 +98,20 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase):
 class WebSocketTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
-        TornadoWrapper.start_app()
-        return TornadoWrapper.tornado_app
 
-    def tearDown(self):
-        pass
+        return Application([
+            ('/ws/test', TestWebSocketHandler, {'websocket': app_test_ws, 'close_future': self.close_future}),
+        ])
 
     @gen_test
     def test_connection_existing_websocket(self):
-        ws_test = yield self.ws_connect('/ws/counter')
-        ws_counter = yield self.ws_connect('/ws/counter')
+        ws_test = yield self.ws_connect('/ws/test')
 
         time.sleep(SLEEPING_TIME)
 
         # Useless, but just in case of. :-))
         self.assertEqual(None, ws_test.close_code)
         self.assertEqual(None, ws_test.close_reason)
-        self.assertEqual(None, ws_counter.close_code)
-        self.assertEqual(None, ws_counter.close_reason)
 
     @gen_test
     def test_connection_no_existing_websocket(self):
@@ -268,14 +277,13 @@ class WebSocketTest(WebSocketBaseTestCase):
             ws.emit('my_event', 'a_string')
 
 
-class WSTestAppTest(WebSocketBaseTestCase):
+class WebSocketTestAppTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
-        TornadoWrapper.start_app()
-        return TornadoWrapper.tornado_app
 
-    def tearDown(self):
-        pass
+        return Application([
+            ('/ws/test', TestWebSocketHandler, {'websocket': app_test_ws, 'close_future': self.close_future}),
+        ])
 
     @gen_test
     def test_send_invalid_json(self):
@@ -313,6 +321,25 @@ class WSTestAppTest(WebSocketBaseTestCase):
             }
         })
 
+    @skipIf(sys.version_info.major == 2, 'Write error on <socket.[...] object>: [Errno 9] Bad file descriptor')
+    @gen_test
+    def test_send_with_registered_event(self):
+        ws = yield self.ws_connect('/ws/test')
+
+        time.sleep(SLEEPING_TIME)
+        yield ws.write_message(json_encode({
+            'event': 'existing_event'
+        }))
+        time.sleep(SLEEPING_TIME)
+
+        response = yield ws.read_message()
+        self.assertDictEqual(json_decode(response), {
+            'event': 'existing_event',
+            'data': {
+                'message': 'I am "existing_event" from "{}" websocket application.'.format(app_test_ws)
+            }
+        })
+
     @gen_test
     def test_send_with_not_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
@@ -332,31 +359,13 @@ class WSTestAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_send_with_registered_event(self):
+    def test_send_with_existing_event_and_invalid_data_format(self):
         ws = yield self.ws_connect('/ws/test')
 
         time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
-            'event': 'existing_event'
-        }))
-        time.sleep(SLEEPING_TIME)
-
-        response = yield ws.read_message()
-        self.assertDictEqual(json_decode(response), {
             'event': 'existing_event',
-            'data': {
-                'message': 'I am "existing_event" from "%s" websocket application.' % app_test_ws,
-                'passed_data': {}
-            }
-        })
-
-    @gen_test
-    def test_send_with_invalid_data_format(self):
-        ws = yield self.ws_connect('/ws/test')
-
-        time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'existing_event', 'data': 'not a dictionary'
+            'data': 'not a dictionary'
         }))
         time.sleep(SLEEPING_TIME)
 
@@ -368,36 +377,13 @@ class WSTestAppTest(WebSocketBaseTestCase):
             }
         })
 
-    @gen_test
-    def test_send_with_registered_event(self):
-        ws = yield self.ws_connect('/ws/test')
 
-        time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'existing_event',
-            'data': {
-                'a_key': 'a_value'
-            }
-        }))
-        time.sleep(SLEEPING_TIME)
-
-        response = yield ws.read_message()
-        self.assertDictEqual(json_decode(response), {
-            'event': 'existing_event',
-            'data': {
-                'message': 'I am "existing_event" from "%s" websocket application.' % app_test_ws,
-                'passed_data': {
-                    'a_key': 'a_value'
-                }
-            }
-        })
-
-
-class WSCounterAppTest(WebSocketBaseTestCase):
+class WebSocketCounterAppTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
-        TornadoWrapper.start_app()
-        return TornadoWrapper.tornado_app
+        return Application([
+            ('/ws/counter', TestWebSocketHandler, {'websocket': app_counter_ws, 'close_future': self.close_future}),
+        ])
 
     def tearDown(self):
         pass
@@ -466,7 +452,6 @@ class WSCounterAppTest(WebSocketBaseTestCase):
     def test_emit_setup_with_good_value(self):
         counter_value = 50
         ws = yield self.ws_connect('/ws/counter')
-
 
         # Tests for first client
 

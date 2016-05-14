@@ -12,7 +12,7 @@ class WebSocket(object):
         Class that you should to make WebSocket applications 👍.
     """
 
-    def __init__(self, url):
+    def __init__(self, url, add_to_handlers=False):
         self.events = {}
         self.handlers = []
         self.context = None
@@ -21,11 +21,12 @@ class WebSocket(object):
         if self.namespace[:1] is not '/':
             self.namespace = '/' + self.namespace
 
-        tornado_websockets.tornadowrapper.TornadoWrapper.add_handlers([
-            ('/ws' + self.namespace, tornado_websockets.websockethandler.WebSocketHandler, {
-                'websocket': self
-            })
-        ])
+        if add_to_handlers is True:
+            tornado_websockets.tornadowrapper.TornadoWrapper.add_handlers([
+                ('/ws' + self.namespace, tornado_websockets.websockethandler.WebSocketHandler, {
+                    'websocket': self
+                })
+            ])
 
     def on(self, callback):
         """

@@ -1,6 +1,6 @@
 from tornado_websockets.websocket import WebSocket
 
-app_test_ws = WebSocket('/test')
+app_test_ws = WebSocket('/test', add_to_handlers=False)
 
 
 class AppTest(object):
@@ -11,7 +11,6 @@ class AppTest(object):
     def existing_event(self, socket, data):
         app_test_ws.emit('existing_event', {
             'message': 'I am "existing_event" from "%s" websocket application.' % app_test_ws,
-            'passed_data': data
         })
 
 
