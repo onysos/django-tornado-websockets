@@ -14,12 +14,11 @@ from tornado import gen
 from tornado.escape import json_encode, json_decode
 from tornado.httpclient import HTTPError
 from tornado.testing import AsyncHTTPTestCase, gen_test
-from tornado.web import RequestHandler, Application
+from tornado.web import Application
 
 from tornado_websockets.exceptions import *
 from tornado_websockets.websocket import WebSocket
 from tornado_websockets.websockethandler import WebSocketHandler
-from tornado_websockets.tornadowrapper import TornadoWrapper
 from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
 from tornado_websockets.tests.app_test import app_test_ws
 
@@ -46,6 +45,7 @@ if os.environ.get('TRAVIS') is None:
     SLEEPING_TIME = 0
 else:
     SLEEPING_TIME = 2
+
 
 class TestWebSocketHandler(WebSocketHandler):
     """Base class for testing handlers that exposes the on_close event.
@@ -336,31 +336,13 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
         })
 
     @gen_test
-    def test_send_with_registered_event(self):
+    def test_send_with_existing_event_and_invalid_data_format(self):
         ws = yield self.ws_connect('/ws/test')
 
         time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
-            'event': 'existing_event'
-        }))
-        time.sleep(SLEEPING_TIME)
-
-        response = yield ws.read_message()
-        self.assertDictEqual(json_decode(response), {
             'event': 'existing_event',
-            'data': {
-                'message': 'I am "existing_event" from "%s" websocket application.' % app_test_ws,
-                'passed_data': {}
-            }
-        })
-
-    @gen_test
-    def test_send_with_invalid_data_format(self):
-        ws = yield self.ws_connect('/ws/test')
-
-        time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'existing_event', 'data': 'not a dictionary'
+            'data': 'not a dictionary'
         }))
         time.sleep(SLEEPING_TIME)
 
@@ -369,30 +351,6 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
             'event': 'error',
             'data': {
                 'message': 'The data should be a dictionary.',
-            }
-        })
-
-    @gen_test
-    def test_send_with_registered_event(self):
-        ws = yield self.ws_connect('/ws/test')
-
-        time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'existing_event',
-            'data': {
-                'a_key': 'a_value'
-            }
-        }))
-        time.sleep(SLEEPING_TIME)
-
-        response = yield ws.read_message()
-        self.assertDictEqual(json_decode(response), {
-            'event': 'existing_event',
-            'data': {
-                'message': 'I am "existing_event" from "%s" websocket application.' % app_test_ws,
-                'passed_data': {
-                    'a_key': 'a_value'
-                }
             }
         })
 
@@ -411,7 +369,7 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
     def test_emit_connection(self):
         ws = yield self.ws_connect('/ws/counter')
 
-# ::#         time.sleep(SLEEPING_TIME)
+        time.sleep(SLEEPING_TIME)
         yield ws.write_message(json_encode({
             'event': 'connection'
         }))
