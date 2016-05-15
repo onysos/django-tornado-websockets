@@ -156,7 +156,7 @@ class WebSocketTest(WebSocketBaseTestCase):
 
         ws = WebSocket('/my_ws', False)
         self.assertListEqual(TornadoWrapper.handlers, [])
-        
+
     @gen_test
     def test_decorator_on_on_not_callable(self):
         ws = WebSocket('/abc')
@@ -343,7 +343,6 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
 
         self.close(ws)
 
-    @skip('Write error on <socket.[...] object>: [Errno 9] Bad file descriptor')
     @gen_test
     def test_send_with_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
