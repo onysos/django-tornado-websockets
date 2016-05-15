@@ -11,7 +11,7 @@ import traceback
 import time
 
 import sys
-from unittest import skipIf
+from unittest import skip
 
 from tornado.concurrent import Future
 from tornado import gen
@@ -124,7 +124,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(e.exception.code, 404)
 
     @gen_test
-    def test_websocket_namespace(self):
+    def test_namespace(self):
         ws1 = WebSocket('/prefixed_with_slash')
         ws2 = WebSocket('not_prefixed_with_slash')
         ws3 = WebSocket('   /prefixed_with_slash_with_spaces    ')
@@ -138,7 +138,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(ws4.namespace, '/not_prefixed_with_slash')
 
     @gen_test
-    def test_websocket_decorator_on_on_not_callable(self):
+    def test_decorator_on_on_not_callable(self):
         ws = WebSocket('/abc')
 
         time.sleep(SLEEPING_TIME)
@@ -155,7 +155,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         )
 
     @gen_test
-    def test_websocket_decorator_on_on_callable(self):
+    def test_decorator_on_on_callable(self):
         ws = WebSocket('/abc')
 
         time.sleep(SLEEPING_TIME)
@@ -165,7 +165,7 @@ class WebSocketTest(WebSocketBaseTestCase):
             pass
 
     @gen_test
-    def test_websocket_decorator_on_with_already_binded_event(self):
+    def test_decorator_on_with_already_binded_event(self):
         ws = WebSocket('/abc')
 
         time.sleep(SLEEPING_TIME)
@@ -187,7 +187,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         )
 
     @gen_test
-    def test_websocket_emit_outside_on_decorator(self):
+    def test_emit_outside_on_decorator(self):
         ws = WebSocket('/abc')
 
         time.sleep(SLEEPING_TIME)
@@ -204,7 +204,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         )
 
     @gen_test
-    def test_websocket_emit_with_bad_handlers(self):
+    def test_emit_with_bad_handlers(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
 
@@ -223,7 +223,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         )
 
     @gen_test
-    def test_websocket_emit_with_bad_parameter_event(self):
+    def test_emit_with_bad_parameter_event(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
 
@@ -235,7 +235,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(str(e.exception), 'Event should be a string.')
 
     @gen_test
-    def test_websocket_emit_with_good_parameter_event(self):
+    def test_emit_with_good_parameter_event(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
 
@@ -247,7 +247,7 @@ class WebSocketTest(WebSocketBaseTestCase):
             ws.emit('my_event')
 
     @gen_test
-    def test_websocket_emit_with_bad_parameter_data(self):
+    def test_emit_with_bad_parameter_data(self):
         ws = WebSocket('/abc')
         ws.handlers = ['handler']
 
@@ -259,7 +259,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(str(e.exception), 'Data should be a string or a dictionary.')
 
     @gen_test
-    def test_websocket_emit_with_good_parameter_data(self):
+    def test_emit_with_good_parameter_data(self):
         ws = WebSocket('/abc')
         ws.handlers = ['not_an_handler']
 
@@ -321,7 +321,7 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
             }
         })
 
-    @skipIf(sys.version_info.major == 2, 'Write error on <socket.[...] object>: [Errno 9] Bad file descriptor')
+    @skip('Write error on <socket.[...] object>: [Errno 9] Bad file descriptor')
     @gen_test
     def test_send_with_registered_event(self):
         ws = yield self.ws_connect('/ws/test')
@@ -384,9 +384,6 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
         return Application([
             ('/ws/counter', TestWebSocketHandler, {'websocket': app_counter_ws, 'close_future': self.close_future}),
         ])
-
-    def tearDown(self):
-        pass
 
     @gen_test
     def test_emit_connection(self):
