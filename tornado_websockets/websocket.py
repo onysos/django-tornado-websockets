@@ -12,7 +12,7 @@ class WebSocket(object):
         Class that you should to make WebSocket applications 👍.
     """
 
-    def __init__(self, url, add_to_handlers=False):
+    def __init__(self, url, add_to_handlers=True):
         self.events = {}
         self.handlers = []
         self.context = None
