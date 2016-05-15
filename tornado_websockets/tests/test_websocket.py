@@ -21,6 +21,7 @@ from tornado.testing import AsyncHTTPTestCase, gen_test
 from tornado.web import Application
 
 from tornado_websockets.exceptions import *
+from tornado_websockets.tornadowrapper import TornadoWrapper
 from tornado_websockets.websocket import WebSocket
 from tornado_websockets.websockethandler import WebSocketHandler
 from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
@@ -137,6 +138,24 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(ws3.namespace, '/prefixed_with_slash_with_spaces')
         self.assertEqual(ws4.namespace, '/not_prefixed_with_slash')
 
+    @gen_test
+    def test_add_to_tornado_handlers(self):
+        TornadoWrapper.reset()
+        self.assertListEqual(TornadoWrapper.handlers, [])
+
+        ws = WebSocket('/my_ws')
+        self.assertListEqual(TornadoWrapper.handlers, [
+            ('/ws/my_ws', WebSocketHandler, {'websocket': ws})
+        ])
+
+    @gen_test
+    def test_not_add_to_handlers(self):
+        TornadoWrapper.reset()
+        self.assertListEqual(TornadoWrapper.handlers, [])
+
+        ws = WebSocket('/my_ws', False)
+        self.assertListEqual(TornadoWrapper.handlers, [])
+    
     @gen_test
     def test_decorator_on_on_not_callable(self):
         ws = WebSocket('/abc')
