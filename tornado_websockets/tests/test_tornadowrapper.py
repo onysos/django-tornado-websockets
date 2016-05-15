@@ -13,32 +13,32 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 class TestTornadoWrapper(unittest.TestCase):
-    def test_tornado_reset(self):
+    def test_reset(self):
         TornadoWrapper.reset()
         self.assertIsNone(TornadoWrapper.tornado_app)
         self.assertIsNone(TornadoWrapper.tornado_server)
         self.assertListEqual(TornadoWrapper.handlers, [])
         self.assertEqual(TornadoWrapper.tornado_port, 8000)
 
-    def test_tornado_start_app_with_invalid_parameter_handlers(self):
+    def test_start_app_with_invalid_parameter_handlers(self):
         with self.assertRaises(TypeError) as e:
             TornadoWrapper.start_app('not a list', {})
 
         self.assertEqual(str(e.exception), 'Expected a list for Tornado handlers.')
 
-    def test_tornado_start_app_with_invalid_parameter_settings(self):
+    def test_start_app_with_invalid_parameter_settings(self):
         with self.assertRaises(TypeError) as e:
             TornadoWrapper.start_app([], 'not a dictionary')
 
         self.assertEqual(str(e.exception), 'Expected a dictionary for Tornado settings.')
 
-    def test_tornado_start_app(self):
+    def test_start_app(self):
         TornadoWrapper.start_app([], {})
 
         self.assertIsNotNone(TornadoWrapper.tornado_app)
         self.assertIsInstance(TornadoWrapper.tornado_app, tornado.web.Application)
 
-    def test_tornado_listen_with_invalid_parameter_port(self):
+    def test_listen_with_invalid_parameter_port(self):
         TornadoWrapper.reset()
 
         with self.assertRaises(TypeError) as e:
@@ -56,7 +56,7 @@ class TestTornadoWrapper(unittest.TestCase):
         )
         self.assertIsNone(TornadoWrapper.tornado_server)
 
-    def test_tornado_listen(self):
+    def test_listen(self):
         TornadoWrapper.start_app()
         TornadoWrapper.listen(12345)
 
@@ -64,19 +64,19 @@ class TestTornadoWrapper(unittest.TestCase):
         self.assertIsNotNone(TornadoWrapper.tornado_server)
         self.assertIsInstance(TornadoWrapper.tornado_server, tornado.httpserver.HTTPServer)
 
-    def test_tornado_loop(self):
+    def test_loop(self):
         TornadoWrapper.start_app()
         TornadoWrapper.listen(8000)
         TornadoWrapper.loop()
         TornadoWrapper.reset()
 
-    def test_tornado_add_handlers_with_invalid_parameter_handlers(self):
+    def test_add_handlers_with_invalid_parameter_handlers(self):
         with self.assertRaises(TypeError) as e:
             TornadoWrapper.add_handlers('not a list or tuple')
 
         self.assertEqual(str(e.exception), 'Expected a list or a tuple for handlers.')
 
-    def test_tornado_add_handler_when_tornadoapp_is_not_running(self):
+    def test_add_handler_when_tornadoapp_is_not_running(self):
         class MyHandler(tornado.web.RequestHandler):
             pass
 
@@ -88,7 +88,7 @@ class TestTornadoWrapper(unittest.TestCase):
         self.assertEqual(TornadoWrapper.handlers[0][0], '.*')
         self.assertEqual(str(TornadoWrapper.handlers[0][1]), str(MyHandler))  # do not works without str() (???)
 
-    def test_tornado_add_handlers_when_tornadoapp_is_not_running(self):
+    def test_add_handlers_when_tornadoapp_is_not_running(self):
         class MyFirstHandler(tornado.web.RequestHandler):
             pass
 
@@ -107,7 +107,7 @@ class TestTornadoWrapper(unittest.TestCase):
         self.assertEqual(TornadoWrapper.handlers[1][0], '/handler/second')
         self.assertEqual(str(TornadoWrapper.handlers[1][1]), str(MySecondHandler))
 
-    def test_tornado_add_handler_when_tornadoapp_is_running(self):
+    def test_add_handler_when_tornadoapp_is_running(self):
         class MyHandler(tornado.web.RequestHandler):
             pass
 
@@ -127,7 +127,7 @@ class TestTornadoWrapper(unittest.TestCase):
         self.assertEqual(handlers[0].regex, re.compile('.*$'))
         self.assertEqual(handlers[0].handler_class, MyHandler)  # do not works without str() (???)
 
-    def test_tornado_add_handlers_when_tornadoapp_is_running(self):
+    def test_add_handlers_when_tornadoapp_is_running(self):
         class MyFirstHandler(tornado.web.RequestHandler):
             pass
 
