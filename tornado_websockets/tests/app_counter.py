@@ -11,8 +11,8 @@ class AppCounter(object):
         self.counter = 0
 
     @app_counter_ws.on
-    def connection(self, socket, data):
-        app_counter_ws.emit('connection', {
+    def open(self, socket):
+        app_counter_ws.emit('open', {
             'message': 'Got new connection.',
             'counter_value': self.counter,
         })
