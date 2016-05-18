@@ -37,6 +37,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.websocket = websocket
         websocket.handlers.append(self)
 
+    def check_origin(self, origin):
+        return True
+
     def on_message(self, message):
         """
             Handle incoming messages on the WebSocket.
@@ -91,7 +94,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             Called when the WebSocket is closed, delete the link between this object and its WebSocket.
         """
 
-        self.on_message('{"event": "close"}')
         self.websocket.handlers.remove(self)
 
     def emit(self, event, data):
