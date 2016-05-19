@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from tornado_websockets.websocket import WebSocket
 
 ws_chat = WebSocket('/my_chat')
-
+ws_chat_without_history = WebSocket('/my_chat_without_history')
 
 class MyChat(TemplateView):
     """
@@ -32,7 +32,7 @@ class MyChat(TemplateView):
         """
 
         [socket.emit('new_message', __) for __ in self.messages]
-        ws_chat.emit('new_connection', '%s just joined the webchat' % data.get('username', '<Anonymous>'))
+        ws_chat.emit('new_connection', '%s just joined the webchat.' % data.get('username', '<Anonymous>'))
 
     @ws_chat.on
     def message(self, socket, data):
@@ -53,4 +53,27 @@ class MyChat(TemplateView):
         }
 
         ws_chat.emit('new_message', message)
-        self.messages.append(message)
+        MyChat.messages.append(message)
+
+    @ws_chat.on
+    def clear_history(self, socket, data):
+        """
+            Called when a client wants to clear messages history.
+            Used only for client-side JavaScript unit tests
+        """
+
+        self.messages = []
+
+
+@ws_chat_without_history.on
+def connection(socket, data):
+    ws_chat_without_history.emit('new_connection', '%s just joined the webchat.' % data.get('username', '<Anonymous>'))
+
+@ws_chat_without_history.on
+def message(socket, data):
+    message = {
+        'username': data.get('username', '<Anonymous>'),
+        'message': data.get('message', 'Empty message')
+    }
+
+    ws_chat_without_history.emit('new_message', message)
