@@ -9,8 +9,7 @@ import os
 import traceback
 
 import time
-
-from unittest import skip
+import pprint
 
 from tornado.concurrent import Future
 from tornado import gen
@@ -25,6 +24,7 @@ from tornado_websockets.websocket import WebSocket
 from tornado_websockets.websockethandler import WebSocketHandler
 from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
 from tornado_websockets.tests.app_test import app_test_ws
+from tornado_websockets.tests.app_reserved_events import app_reserved_events_ws
 
 try:
     import tornado.websocket  # noqa
@@ -48,7 +48,9 @@ except ImportError:
 if os.environ.get('TRAVIS') is None:
     SLEEPING_TIME = 0
 else:
-    SLEEPING_TIME = 2
+    SLEEPING_TIME = 1
+
+pp = pprint.PrettyPrinter(indent=4)
 
 
 class TestWebSocketHandler(WebSocketHandler):
@@ -297,7 +299,7 @@ class WebSocketTest(WebSocketBaseTestCase):
             ws.emit('my_event', 'a_string')
 
 
-class WebSocketTestAppTest(WebSocketBaseTestCase):
+class WebSocketAppTestTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
 
@@ -364,26 +366,6 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
         self.close(ws)
 
     @gen_test
-    def test_send_with_not_registered_event(self):
-        ws = yield self.ws_connect('/ws/test')
-
-        time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'not_registered_event'
-        }))
-        time.sleep(SLEEPING_TIME)
-
-        response = yield ws.read_message()
-        self.assertDictEqual(json_decode(response), {
-            'event': 'error',
-            'data': {
-                'message': 'The event "not_registered_event" does not exist for websocket "%s".' % app_test_ws,
-            }
-        })
-
-        self.close(ws)
-
-    @gen_test
     def test_send_with_existing_event_and_invalid_data_format(self):
         ws = yield self.ws_connect('/ws/test')
 
@@ -405,7 +387,7 @@ class WebSocketTestAppTest(WebSocketBaseTestCase):
         self.close(ws)
 
 
-class WebSocketCounterAppTest(WebSocketBaseTestCase):
+class WebSocketAppCounterTest(WebSocketBaseTestCase):
     def get_app(self):
         self.close_future = Future()
         return Application([
@@ -417,14 +399,10 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
         ws = yield self.ws_connect('/ws/counter')
 
         time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'connection'
-        }))
-        time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'connection',
+            'event': 'open',
             'data': {
                 'message': 'Got new connection.',
                 'counter_value': 0  # Initial value of counter
@@ -433,12 +411,12 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
 
         self.close(ws)
 
-
     @gen_test
     def test_emit_setup_without_counter_value(self):
         ws = yield self.ws_connect('/ws/counter')
 
         time.sleep(SLEEPING_TIME)
+        yield ws.read_message()
         yield ws.write_message(json_encode({
             'event': 'setup'
         }))
@@ -455,12 +433,20 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
 
         self.close(ws)
 
-
     @gen_test
     def test_emit_setup_with_bad_counter_value_type(self):
         ws = yield self.ws_connect('/ws/counter')
 
         time.sleep(SLEEPING_TIME)
+        response = yield ws.read_message()
+        self.assertDictEqual(json_decode(response), {
+            'event': 'open',
+            'data': {
+                'message': 'Got new connection.',
+                'counter_value': 0  # Initial value of counter
+            }
+        })
+
         yield ws.write_message(json_encode({
             'event': 'setup',
             'data': {
@@ -480,7 +466,6 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
 
         self.close(ws)
 
-
     @gen_test(timeout=20)
     def test_emit_setup_with_good_value(self):
         counter_value = 50
@@ -491,6 +476,7 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
         self.assertEqual(app_counter.counter, 0)
 
         time.sleep(SLEEPING_TIME)
+        yield ws.read_message()
         yield ws.write_message(json_encode({
             'event': 'setup',
             'data': {
@@ -516,6 +502,7 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
         ws2 = yield self.ws_connect('/ws/counter')
 
         time.sleep(SLEEPING_TIME)
+        yield ws2.read_message()
         yield ws2.write_message(json_encode({'event': 'increment'}))
         time.sleep(SLEEPING_TIME)
 
@@ -531,4 +518,43 @@ class WebSocketCounterAppTest(WebSocketBaseTestCase):
 
         self.close(ws)
         self.close(ws2)
+
+
+class WebSocketAppReservedEventsTest(WebSocketBaseTestCase):
+    def get_app(self):
+        self.close_future = Future()
+        return Application([
+            ('/ws/reserved_events', TestWebSocketHandler, {
+                'websocket': app_reserved_events_ws,
+                'close_future': self.close_future
+            }),
+        ])
+
+    @gen_test
+    def test_existing_event_open_1(self):
+        ws = yield self.ws_connect('/ws/reserved_events')
+
+        response = yield ws.read_message()
+        self.assertDictEqual(json_decode(response), {
+            'event': 'new_connection',
+            'data': {
+                'connections_count': 1
+            }
+        })
+
+        self.close(ws)  # do not call tornado_websockets.WebSocketHandler.on_close()
+
+    @gen_test
+    def test_existing_event_open_2(self):
+        ws = yield self.ws_connect('/ws/reserved_events')
+
+        response = yield ws.read_message()
+        self.assertDictEqual(json_decode(response), {
+            'event': 'new_connection',
+            'data': {
+                'connections_count': 2
+            }
+        })
+
+        self.close(ws)  # do not call tornado_websockets.WebSocketHandler.on_close()
 

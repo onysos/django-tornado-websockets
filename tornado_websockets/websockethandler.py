@@ -37,6 +37,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.websocket = websocket
         websocket.handlers.append(self)
 
+    def check_origin(self, origin):
+        return True
+
     def on_message(self, message):
         """
             Handle incoming messages on the WebSocket.
@@ -57,7 +60,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.emit_error('There is no event in this JSON.')
             return
         elif self.websocket.events.get(event) is None:
-            self.emit_error('The event "%s" does not exist for websocket "%s".' % (event, self.websocket))
             return
 
         if not data:
@@ -66,14 +68,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.emit_error('The data should be a dictionary.')
             return
 
-        # print('EVENT: %s' % event)
-        # print('DATA: %s' % data)
-
         callback = self.websocket.events.get(event)
         spec = inspect.getargspec(callback)
         kwargs = {}
-
-        # print('SPEC: %s' % str(spec))
 
         if 'self' in spec.args:
             kwargs['self'] = self.websocket.context
@@ -82,18 +79,20 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         if 'data' in spec.args:
             kwargs['data'] = data
 
-        # print('CALLBACK: %s' % callback)
-        # print('KWARGS: %s' % kwargs)
-
-        # print('-- Triggering "%s" event from "%s" namespace' % (event, self.websocket.namespace))
-
         return callback(**kwargs)
+
+    def open(self):
+        """
+            Called when the WebSocket is opened
+        """
+
+        self.on_message('{"event": "open"}')
 
     def on_close(self):
         """
             Called when the WebSocket is closed, delete the link between this object and its WebSocket.
         """
-        # print('-- Closing WebSocket "%s" for "%s" handler.')
+
         self.websocket.handlers.remove(self)
 
     def emit(self, event, data):
@@ -122,5 +121,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             :type message: str
         """
 
-        # print('-- Error: %s' % message)
+        return self.emit('error', {'message': message})
+
+    def emit_warning(self, message):
+        """
+            Shortuct to emit a warning.
+
+            :param message: error message
+            :type message: str
+        """
+
         return self.emit('error', {'message': message})

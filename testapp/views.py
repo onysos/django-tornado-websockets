@@ -2,9 +2,17 @@ from django.views.generic import TemplateView
 
 from tornado_websockets.websocket import WebSocket
 
+# WebSocket echo server
+ws_echo = WebSocket('/echo')
+
+@ws_echo.on
+def message(socket, data):
+    socket.emit('message', data)
+
+
+# WebSocket chat server, using Django for template rendering
+
 ws_chat = WebSocket('/my_chat')
-
-
 class MyChat(TemplateView):
     """
         Proof of concept about a really simple web chat using websockets and supporting messages history
@@ -32,7 +40,7 @@ class MyChat(TemplateView):
         """
 
         [socket.emit('new_message', __) for __ in self.messages]
-        ws_chat.emit('new_connection', '%s just joined the webchat' % data.get('username', '<Anonymous>'))
+        ws_chat.emit('new_connection', '%s just joined the webchat.' % data.get('username', '<Anonymous>'))
 
     @ws_chat.on
     def message(self, socket, data):
@@ -53,4 +61,14 @@ class MyChat(TemplateView):
         }
 
         ws_chat.emit('new_message', message)
-        self.messages.append(message)
+        MyChat.messages.append(message)
+
+    @ws_chat.on
+    def clear_history(self, socket, data):
+        """
+            Called when a client wants to clear messages history.
+            Used only for client-side JavaScript unit tests
+        """
+
+        self.messages = []
+

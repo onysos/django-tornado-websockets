@@ -65,7 +65,9 @@
         var namespace = '/my_chat';
         var ws = new WebSocket('ws://127.0.0.1:8000/ws' + namespace);
 
-        ws.onopen = function () {
+        ws.onopen = function (event) {
+            console.log(event)
+
             ws.send(JSON.stringify({
                 event: 'connection',
                 namespace: namespace,
@@ -76,12 +78,20 @@
 
             $formMessage.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                messageValue = $fieldMessage.value.trim()
+
+                if(messageValue == 'close') {
+                    ws.close()
+                    return;
+                }
+
                 ws.send(JSON.stringify({
                     event: 'message',
                     namespace: namespace,
                     data: {
                         username: username,
-                        message: $fieldMessage.value.trim()
+                        message: messageValue
                     }
                 }));
 
@@ -107,6 +117,14 @@
                     write_message(data.username + ' writes: "' + data.message + '"');
                     break;
             }
+        }
+
+        ws.onerror = function(e) {
+            console.error(e);
+        }
+
+        ws.onclose = function(e) {
+            console.warn(e)
         }
     }
 
