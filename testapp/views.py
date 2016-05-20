@@ -2,9 +2,17 @@ from django.views.generic import TemplateView
 
 from tornado_websockets.websocket import WebSocket
 
-ws_chat = WebSocket('/my_chat')
-ws_chat_without_history = WebSocket('/my_chat_without_history')
+# WebSocket echo server
+ws_echo = WebSocket('/echo')
 
+@ws_echo.on
+def message(socket, data):
+    socket.emit('message', data)
+
+
+# WebSocket chat server, using Django for template rendering
+
+ws_chat = WebSocket('/my_chat')
 class MyChat(TemplateView):
     """
         Proof of concept about a really simple web chat using websockets and supporting messages history
@@ -64,16 +72,3 @@ class MyChat(TemplateView):
 
         self.messages = []
 
-
-@ws_chat_without_history.on
-def connection(socket, data):
-    ws_chat_without_history.emit('new_connection', '%s just joined the webchat.' % data.get('username', '<Anonymous>'))
-
-@ws_chat_without_history.on
-def message(socket, data):
-    message = {
-        'username': data.get('username', '<Anonymous>'),
-        'message': data.get('message', 'Empty message')
-    }
-
-    ws_chat_without_history.emit('new_message', message)
