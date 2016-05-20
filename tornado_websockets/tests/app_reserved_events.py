@@ -12,17 +12,8 @@ class AppReservedEvents(object):
     def open(self, socket):
         self.connections.append(socket)
 
-        app_reserved_events_ws.emit('new_connection', {
+        app_reserved_events_ws.emit('appreservedevents_connection', {
             'connections_count': len(self.connections)
         })
-
-    @app_reserved_events_ws.on
-    def close(self, socket):
-        self.connections.remove(socket)
-
-        app_reserved_events_ws.emit('close_connection', {
-            'connections_count': len(self.connections)
-        })
-
 
 app_reserved_events = AppReservedEvents()

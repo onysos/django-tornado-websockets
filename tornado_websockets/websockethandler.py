@@ -53,19 +53,20 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             event = message.get('event')
             data = message.get('data')
         except ValueError:
-            self.emit_error('Invalid JSON was sent.')
+            self.emit_warning('Invalid JSON was sent.')
             return
 
         if not event:
-            self.emit_error('There is no event in this JSON.')
+            self.emit_warning('There is no event in this JSON.')
             return
         elif self.websocket.events.get(event) is None:
+            self.emit_warning('Event is not binded.')
             return
 
         if not data:
             data = {}
         elif not isinstance(data, dict):
-            self.emit_error('The data should be a dictionary.')
+            self.emit_warning('The data should be a dictionary.')
             return
 
         callback = self.websocket.events.get(event)
@@ -86,7 +87,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             Called when the WebSocket is opened
         """
 
-        self.on_message('{"event": "open"}')
+        if self.websocket.events.get('open'):
+            self.on_message('{"event": "open"}')
 
     def on_close(self):
         """
@@ -113,16 +115,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             'data': data
         })
 
-    def emit_error(self, message):
-        """
-            Shortuct to emit an error.
-
-            :param message: error message
-            :type message: str
-        """
-
-        return self.emit('error', {'message': message})
-
     def emit_warning(self, message):
         """
             Shortuct to emit a warning.
@@ -131,4 +123,4 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             :type message: str
         """
 
-        return self.emit('error', {'message': message})
+        return self.emit('warning', {'message': message})
