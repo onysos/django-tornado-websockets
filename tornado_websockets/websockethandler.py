@@ -60,7 +60,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.emit_error('There is no event in this JSON.')
             return
         elif self.websocket.events.get(event) is None:
-            self.emit_warning('The event "%s" does not exist for websocket "%s".' % (event, self.websocket))
             return
 
         if not data:
