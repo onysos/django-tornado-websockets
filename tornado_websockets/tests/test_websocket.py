@@ -48,7 +48,7 @@ except ImportError:
 if os.environ.get('TRAVIS') is None:
     SLEEPING_TIME = 0
 else:
-    SLEEPING_TIME = 2
+    SLEEPING_TIME = 1
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -313,7 +313,6 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
 
         time.sleep(SLEEPING_TIME)
         yield ws.write_message('Not a JSON string.')
-        response = yield ws.read_message()
         time.sleep(SLEEPING_TIME)
 
         response = yield ws.read_message()
@@ -336,7 +335,6 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
         }))
         time.sleep(SLEEPING_TIME)
 
-        response = yield ws.read_message()  # open event
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
             'event': 'error',
@@ -357,33 +355,11 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
         }))
         time.sleep(SLEEPING_TIME)
 
-        response = yield ws.read_message()  # open event
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
             'event': 'existing_event',
             'data': {
                 'message': 'I am "existing_event" from "{}" websocket application.'.format(app_test_ws)
-            }
-        })
-
-        self.close(ws)
-
-    @gen_test
-    def test_send_with_not_registered_event(self):
-        ws = yield self.ws_connect('/ws/test')
-
-        time.sleep(SLEEPING_TIME)
-        yield ws.write_message(json_encode({
-            'event': 'not_registered_event'
-        }))
-        time.sleep(SLEEPING_TIME)
-
-        response = yield ws.read_message()  # open event
-        response = yield ws.read_message()
-        self.assertDictEqual(json_decode(response), {
-            'event': 'error',
-            'data': {
-                'message': 'The event "not_registered_event" does not exist for websocket "%s".' % app_test_ws,
             }
         })
 
@@ -400,7 +376,6 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
         }))
         time.sleep(SLEEPING_TIME)
 
-        response = yield ws.read_message()  # open event
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
             'event': 'error',
@@ -441,8 +416,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
         ws = yield self.ws_connect('/ws/counter')
 
         time.sleep(SLEEPING_TIME)
-        response = yield ws.read_message()
-
+        yield ws.read_message()
         yield ws.write_message(json_encode({
             'event': 'setup'
         }))
@@ -502,6 +476,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
         self.assertEqual(app_counter.counter, 0)
 
         time.sleep(SLEEPING_TIME)
+        yield ws.read_message()
         yield ws.write_message(json_encode({
             'event': 'setup',
             'data': {
@@ -510,7 +485,6 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
         }))
         time.sleep(SLEEPING_TIME)
 
-        response = yield ws.read_message()
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
             'event': 'after_setup',
@@ -528,7 +502,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
         ws2 = yield self.ws_connect('/ws/counter')
 
         time.sleep(SLEEPING_TIME)
-        response = yield ws2.read_message()
+        yield ws2.read_message()
         yield ws2.write_message(json_encode({'event': 'increment'}))
         time.sleep(SLEEPING_TIME)
 
@@ -562,7 +536,7 @@ class WebSocketAppReservedEventsTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'open',
+            'event': 'new_connection',
             'data': {
                 'connections_count': 1
             }
@@ -576,7 +550,7 @@ class WebSocketAppReservedEventsTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'open',
+            'event': 'new_connection',
             'data': {
                 'connections_count': 2
             }
