@@ -9,7 +9,7 @@ class AppTest(object):
 
     @app_test_ws.on
     def existing_event(self, socket, data):
-        app_test_ws.emit('existing_event', {
+        app_test_ws.emit('apptest_existing_event', {
             'message': 'I am "existing_event" from "%s" websocket application.' % app_test_ws,
         })
 

@@ -317,7 +317,7 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'error',
+            'event': 'warning',
             'data': {
                 'message': 'Invalid JSON was sent.',
             }
@@ -337,7 +337,7 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'error',
+            'event': 'warning',
             'data': {
                 'message': 'There is no event in this JSON.',
             }
@@ -357,7 +357,7 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'existing_event',
+            'event': 'apptest_existing_event',
             'data': {
                 'message': 'I am "existing_event" from "{}" websocket application.'.format(app_test_ws)
             }
@@ -378,7 +378,7 @@ class WebSocketAppTestTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'error',
+            'event': 'warning',
             'data': {
                 'message': 'The data should be a dictionary.',
             }
@@ -402,7 +402,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'open',
+            'event': 'counter_connection',
             'data': {
                 'message': 'Got new connection.',
                 'counter_value': 0  # Initial value of counter
@@ -424,7 +424,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'error',
+            'event': 'counter_error',
             'data': {
                 'message': 'Setup initial counter value: FAIL.',
                 'details': 'Can not get "value" from data.'
@@ -440,7 +440,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
         time.sleep(SLEEPING_TIME)
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'open',
+            'event': 'counter_connection',
             'data': {
                 'message': 'Got new connection.',
                 'counter_value': 0  # Initial value of counter
@@ -457,7 +457,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'error',
+            'event': 'counter_error',
             'data': {
                 'message': 'Setup initial counter value: FAIL.',
                 'details': '"value" is not an integer.'
@@ -487,7 +487,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'after_setup',
+            'event': 'counter_after_setup',
             'data': {
                 'message': 'Setup initial counter value: OK.',
                 'counter_value': counter_value
@@ -508,7 +508,7 @@ class WebSocketAppCounterTest(WebSocketBaseTestCase):
 
         response = yield ws2.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'incremented_counter',
+            'event': 'counter_increment',
             'data': {
                 'counter_value': counter_value  # 51
             }
@@ -536,7 +536,7 @@ class WebSocketAppReservedEventsTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'new_connection',
+            'event': 'appreservedevents_connection',
             'data': {
                 'connections_count': 1
             }
@@ -550,11 +550,10 @@ class WebSocketAppReservedEventsTest(WebSocketBaseTestCase):
 
         response = yield ws.read_message()
         self.assertDictEqual(json_decode(response), {
-            'event': 'new_connection',
+            'event': 'appreservedevents_connection',
             'data': {
                 'connections_count': 2
             }
         })
 
         self.close(ws)  # do not call tornado_websockets.WebSocketHandler.on_close()
-
