@@ -128,7 +128,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(e.exception.code, 404)
 
     @gen_test
-    def test_namespace(self):
+    def test_path(self):
         ws1 = WebSocket('/prefixed_with_slash')
         ws2 = WebSocket('not_prefixed_with_slash')
         ws3 = WebSocket('   /prefixed_with_slash_with_spaces    ')
@@ -136,10 +136,10 @@ class WebSocketTest(WebSocketBaseTestCase):
 
         time.sleep(SLEEPING_TIME)
 
-        self.assertEqual(ws1.namespace, '/prefixed_with_slash')
-        self.assertEqual(ws2.namespace, '/not_prefixed_with_slash')
-        self.assertEqual(ws3.namespace, '/prefixed_with_slash_with_spaces')
-        self.assertEqual(ws4.namespace, '/not_prefixed_with_slash')
+        self.assertEqual(ws1.path, '/prefixed_with_slash')
+        self.assertEqual(ws2.path, '/not_prefixed_with_slash')
+        self.assertEqual(ws3.path, '/prefixed_with_slash_with_spaces')
+        self.assertEqual(ws4.path, '/not_prefixed_with_slash')
 
     @gen_test
     def test_add_to_tornado_handlers(self):
@@ -202,10 +202,10 @@ class WebSocketTest(WebSocketBaseTestCase):
                 pass
 
         self.assertEqual(e.exception.event, 'my_method')
-        self.assertEqual(e.exception.namespace, '/abc')
+        self.assertEqual(e.exception.path, '/abc')
         self.assertEqual(
             str(e.exception),
-            'The event "%s" is already binded for "%s" namespace.' % ('my_method', '/abc')
+            'The event "%s" is already binded for "%s" path.' % ('my_method', '/abc')
         )
 
     @gen_test
@@ -218,10 +218,10 @@ class WebSocketTest(WebSocketBaseTestCase):
             ws.emit('my_event', 'my_message')
 
         self.assertEqual(e.exception.event, 'my_event')
-        self.assertEqual(e.exception.namespace, '/abc')
+        self.assertEqual(e.exception.path, '/abc')
         self.assertEqual(
             str(e.exception),
-            'Can not emit "%s" event in "%s" namespace, emit() should be used in a function or class method'
+            'Can not emit "%s" event in "%s" path, emit() should be used in a function or class method'
             ' decorated by @WebSocket.on decorator.' % ('my_event', '/abc')
         )
 

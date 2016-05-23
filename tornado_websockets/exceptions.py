@@ -10,19 +10,19 @@ class TornadoWebSocketsError(Exception):
 
 class WebSocketEventAlreadyBinded(TornadoWebSocketsError, NameError):
     """
-        Exception thrown when an user try to bind an already existing event for a given namespace.
+        Exception thrown when an user try to bind an already existing event for a given path.
 
         * ``event`` - name of the event under investigation.
-        * ``namespace`` - namespace where the offence have taken place.
+        * ``path`` - path where the offence have taken place.
     """
 
-    def __init__(self, event, namespace):
+    def __init__(self, event, path):
         self.event = event
-        self.namespace = namespace
-        super(WebSocketEventAlreadyBinded, self).__init__(event, namespace)
+        self.path = path
+        super(WebSocketEventAlreadyBinded, self).__init__(event, path)
 
     def __str__(self):
-        return 'The event "%s" is already binded for "%s" namespace.' % (self.event, self.namespace)
+        return 'The event "%s" is already binded for "%s" path.' % (self.event, self.path)
 
 
 class InvalidInstanceError(TornadoWebSocketsError, TypeError):
@@ -50,17 +50,17 @@ class EmitHandlerError(TornadoWebSocketsError):
         by :meth:`@WebSocket.on() <tornado_websockets.websocket.WebSocket.on>` decorator.
 
         * ``event`` - name of the event under investigation.
-        * ``namespace`` - namespace where the offence have taken place.
+        * ``path`` - path where the offence have taken place.
     """
 
-    def __init__(self, event, namespace):
+    def __init__(self, event, path):
         self.event = event
-        self.namespace = namespace
-        super(EmitHandlerError, self).__init__(event, namespace)
+        self.path = path
+        super(EmitHandlerError, self).__init__(event, path)
 
     def __str__(self):
-        return 'Can not emit "%s" event in "%s" namespace, emit() should be used in a function or class method' \
-               ' decorated by @WebSocket.on decorator.' % (self.event, self.namespace)
+        return 'Can not emit "%s" event in "%s" path, emit() should be used in a function or class method' \
+               ' decorated by @WebSocket.on decorator.' % (self.event, self.path)
 
 
 class NotCallableError(TornadoWebSocketsError):
