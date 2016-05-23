@@ -4,8 +4,6 @@ Installation
 Automatic installation
 ----------------------
 
-.. note:: Automatic installation is not already working, please see `Manual installation`_ section.
-
 .. code-block:: bash
 
     $ pip install django-tornado-websockets
