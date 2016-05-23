@@ -12,18 +12,18 @@ class WebSocket(object):
         Class that you should to make WebSocket applications 👍.
     """
 
-    def __init__(self, url, add_to_handlers=True):
+    def __init__(self, path, add_to_handlers=True):
         self.events = {}
         self.handlers = []
         self.context = None
 
-        self.namespace = url.strip()
-        if self.namespace[:1] is not '/':
-            self.namespace = '/' + self.namespace
+        self.path = path.strip()
+        if self.path[:1] is not '/':
+            self.path = '/' + self.path
 
         if add_to_handlers is True:
             tornado_websockets.tornadowrapper.TornadoWrapper.add_handlers([
-                ('/ws' + self.namespace, tornado_websockets.websockethandler.WebSocketHandler, {
+                ('/ws' + self.path, tornado_websockets.websockethandler.WebSocketHandler, {
                     'websocket': self
                 })
             ])
@@ -52,9 +52,9 @@ class WebSocket(object):
         event = callback.__name__
 
         if self.events.get(event) is not None:
-            raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(event, self.namespace)
+            raise tornado_websockets.exceptions.WebSocketEventAlreadyBinded(event, self.path)
 
-        # print('-- Binding "%s" event for "%s" namespace with callback "%s"' % (event, self.namespace, callback))
+        # print('-- Binding "%s" event for "%s" path with callback "%s"' % (event, self.path, callback))
         self.events[event] = callback
         return callback
 
@@ -89,7 +89,7 @@ class WebSocket(object):
             raise TypeError('Data should be a string or a dictionary.')
 
         if not self.handlers:
-            raise tornado_websockets.exceptions.EmitHandlerError(event, self.namespace)
+            raise tornado_websockets.exceptions.EmitHandlerError(event, self.path)
 
         for handler in self.handlers:
             if not isinstance(handler, tornado_websockets.websockethandler.WebSocketHandler):

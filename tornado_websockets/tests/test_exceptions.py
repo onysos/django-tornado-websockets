@@ -14,21 +14,21 @@ class TestExceptions(unittest.TestCase):
 
     def test_websocketeventalreadybinded(self):
         event = 'my_event'
-        namespace = '/ws/my_namespace'
+        path = '/ws/my_path'
 
         with self.assertRaises(WebSocketEventAlreadyBinded) as e:
-            raise WebSocketEventAlreadyBinded(event=event, namespace=namespace)
+            raise WebSocketEventAlreadyBinded(event=event, path=path)
 
         self.assertIsInstance(e.exception, NameError)
         self.assertIsInstance(e.exception, TornadoWebSocketsError)
         self.assertIsInstance(e.exception, Exception)
 
         self.assertEqual(e.exception.event, event)
-        self.assertEqual(e.exception.namespace, namespace)
+        self.assertEqual(e.exception.path, path)
 
         self.assertEqual(
             str(e.exception),
-            'The event "%s" is already binded for "%s" namespace.' % (event, namespace)
+            'The event "%s" is already binded for "%s" path.' % (event, path)
         )
 
     def test_invalidinstanceerror(self):
@@ -52,21 +52,21 @@ class TestExceptions(unittest.TestCase):
 
     def test_emithandlererror(self):
         event = 'my_event'
-        namespace = '/ws/my_namespace'
+        path = '/ws/my_path'
 
         with self.assertRaises(EmitHandlerError) as e:
-            raise EmitHandlerError(event=event, namespace=namespace)
+            raise EmitHandlerError(event=event, path=path)
 
         self.assertIsInstance(e.exception, TornadoWebSocketsError)
         self.assertIsInstance(e.exception, Exception)
 
         self.assertEqual(e.exception.event, event)
-        self.assertEqual(e.exception.namespace, namespace)
+        self.assertEqual(e.exception.path, path)
 
         self.assertEqual(
             str(e.exception),
-            'Can not emit "%s" event in "%s" namespace, emit() should be used in a function or class method decorated by'
-            ' @WebSocket.on decorator.' % (event, namespace)
+            'Can not emit "%s" event in "%s" path, emit() should be used in a function or class method decorated by'
+            ' @WebSocket.on decorator.' % (event, path)
         )
 
     def test_notcallableerror(self):
