@@ -7,6 +7,9 @@ django-tornado-websockets
 .. image:: https://coveralls.io/repos/github/Kocal/django-tornado-websockets/badge.svg?branch=master
     :target: https://coveralls.io/github/Kocal/django-tornado-websockets?branch=master
 
+.. image:: https://badge.fury.io/py/django-tornado-websockets.svg
+    :target: https://badge.fury.io/py/django-tornado-websockets
+
 Django-tornado-websockets is a useful solution to provide an easy way to use Tornado WebSockets with a Django
 application.
 
