@@ -2,7 +2,9 @@
 <html>
 <head>
     <style>
-        .hide { display: none }
+        .hide {
+            display: none
+        }
     </style>
 </head>
 <body>
@@ -31,26 +33,29 @@
     <ul id="messages"></ul>
 </div>
 
-<script>
+{% load static %}
+<script src="{% static 'tornado_websockets/tornado_websockets_client/dist/main.min.js' %}"></script>
 
+<script>
     /* --- Authentification --- */
 
     var $formChooseUsername = document.querySelector('form[name="choose-username"]');
     var $username = $formChooseUsername.querySelector('input[name="username"]');
     var username;
 
-    $formChooseUsername.addEventListener('submit', function(e) {
+    $formChooseUsername.addEventListener('submit', function (e) {
         e.preventDefault();
 
         username = $username.value.trim();
 
-        if(username == '') {
+        if (username == '') {
             return alert('Provide an username')
         }
 
         return show_chat();
     }, false);
-
+</script>
+<script>
     /* --- Web Chat --- */
 
     var $chat = document.querySelector('#chat');
@@ -62,70 +67,34 @@
         $formChooseUsername.classList.add('hide');
         $chat.classList.remove('hide');
 
-        var namespace = '/my_chat';
-        var ws = new WebSocket('ws://127.0.0.1:8000/ws' + namespace);
+        var ws = new TornadoWebSocket('/my_chat');
 
-        ws.onopen = function (event) {
-            console.log(event)
+        ws.on('open', function (event) {
+            ws.emit('connection', {
+                username: username
+            });
 
-            ws.send(JSON.stringify({
-                event: 'connection',
-                namespace: namespace,
-                data: {
-                    username: username
-                }
-            }));
+            ws.on('new_connection', function (data) {
+                write_message(data.message);
+            });
 
-            $formMessage.addEventListener('submit', function(e) {
+            ws.on('new_message', function(data) {
+                write_message(data.username + ' writes: "' + data.message + '"');
+            });
+
+            $formMessage.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                messageValue = $fieldMessage.value.trim()
+                ws.emit('message', {
+                    username: username,
+                    message: $fieldMessage.value.trim()
+                });
 
-                if(messageValue == 'close') {
-                    ws.close()
-                    return;
-                }
+            }, false);
+        });
 
-                ws.send(JSON.stringify({
-                    event: 'message',
-                    namespace: namespace,
-                    data: {
-                        username: username,
-                        message: messageValue
-                    }
-                }));
-
-                $fieldMessage.value = ''
-            }, false)
-        };
-
-        ws.onmessage = function (e) {
-            var d = JSON.parse(e.data);
-
-            var event = d.event;
-            var data = d.data;
-
-            console.log(event, data);
-
-            switch (event) {
-                case 'new_connection':
-                    write_message(data.message);
-                    break;
-
-                case 'new_message':
-                    console.log(data);
-                    write_message(data.username + ' writes: "' + data.message + '"');
-                    break;
-            }
-        }
-
-        ws.onerror = function(e) {
-            console.error(e);
-        }
-
-        ws.onclose = function(e) {
-            console.warn(e)
-        }
+        ws.on('error', function(event) { console.log(event); });
+        ws.on('close', function(event) { console.log(event); });
     }
 
     function write_message(message) {

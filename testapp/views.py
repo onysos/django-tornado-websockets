@@ -61,7 +61,7 @@ class MyChat(TemplateView):
         }
 
         ws_chat.emit('new_message', message)
-        MyChat.messages.append(message)
+        self.messages.append(message)
 
     @ws_chat.on
     def clear_history(self, socket, data):
