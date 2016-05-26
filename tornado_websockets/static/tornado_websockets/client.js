@@ -1,1 +1,1 @@
-tornado_websockets_client/dist/main.min.js
+client/dist/main.min.js
