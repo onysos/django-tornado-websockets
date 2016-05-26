@@ -1,0 +1,3 @@
+[submodule "tornado_websockets/static/tornado_websockets/client"]
+	path = tornado_websockets/static/tornado_websockets/client
+	url = https://github.com/Kocal/django-tornado-websockets-client.git
