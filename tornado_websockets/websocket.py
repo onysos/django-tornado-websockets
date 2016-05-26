@@ -18,8 +18,7 @@ class WebSocket(object):
         self.context = None
 
         self.path = path.strip()
-        if self.path[:1] is not '/':
-            self.path = '/' + self.path
+        self.path = self.path if self.path.startswith('/') else '/' + self.path
 
         if add_to_handlers is True:
             tornado_websockets.tornadowrapper.TornadoWrapper.add_handlers([
