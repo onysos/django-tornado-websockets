@@ -34,8 +34,10 @@ You can try to wrap Tornado **WSGI server** into Gunicorn/uWSGI **WSGI server** 
 Let's explain this diagram:
 
 1. The client make a request to our web server with his web browser,
-2. Our web server (`nginx <http://nginx.org>`_, `Apache <https://httpd.apache.org>`_, ...) pass this WSGI or WebSocket request to Tornado [#f1]_,
-3. If it is a *WebSocket request*, we pass it to ``tornado.websocket``, otherwise it's Django that will handle this request,
+2. Our web server (`nginx <http://nginx.org>`_, `Apache <https://httpd.apache.org>`_, ...) pass this WSGI or WebSocket
+   request to Tornado [#f1]_,
+3. If it is a *WebSocket request*, we pass it to ``tornado.websocket``, otherwise it's Django that will handle this
+   request,
 4. We wait for a *WebSocket response* or a Django response,
 5. and 6. Then we return this response to the client.
 
@@ -53,4 +55,5 @@ Documentation
    installation
    django_integration_configuration
    usage
+   modules
    api
