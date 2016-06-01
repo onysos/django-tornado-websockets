@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="progress_bar-container"></div>
+<p id="label"></p>
+
+<button id="btnStart">Start</button>
+
+
+{% load static %}
+<script src="{% static 'tornado_websockets/client.js' %}"></script>
+<script>
+    var ws = TornadoWebSocket('/module/progress_bar/my_progress_bar');
+    var $progressBarContainer = document.querySelector('#progress_bar-container');
+    var $progressBar = document.createElement('progress');
+    var $label = document.querySelector('#label');
+
+    var $btnStart = document.querySelector('#btnStart');
+
+    ws.on('open', function () {
+
+        $btnStart.addEventListener('click', function () {
+            ws.emit('go');
+        });
+
+        ws.on('before_init', function () {
+            console.log("Before init")
+        });
+
+        ws.on('init', function (data) {
+            if (!data.indeterminate) {
+                $progressBar.setAttribute('min', data.min);
+                $progressBar.setAttribute('max', data.max);
+                $progressBar.setAttribute('value', data.value);
+            }
+
+            $progressBarContainer.appendChild($progressBar);
+        });
+
+        ws.on('after_init', function () {
+            console.log("After init")
+        });
+
+//         ----
+
+        ws.on('before_update', function () {
+            console.log('Before update')
+        });
+
+        ws.on('update', function (data) {
+            $progressBar.value = data.value;
+            $label.textContent = data.label;
+        });
+
+        ws.on('after_update', function () {
+            console.log('After update')
+        });
+
+        // ----
+
+        ws.on('done', function () {
+            $label.textContent = 'Done :-))'
+        });
+
+        // ----
+
+        ws.on('warning', function (data) {
+            console.log('Warn', data);
+        });
+
+    });
+
+    ws.on('error', function (event) {
+        console.log(event);
+    });
+    ws.on('close', function (event) {
+        console.log(event);
+    });
+
+    window.addEventListener('beforeunload', function () {
+        ws.websocket.close();
+    });
+</script>
+</body>
+</html>

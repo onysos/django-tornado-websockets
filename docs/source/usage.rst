@@ -163,7 +163,7 @@ django-tornado-websockets-client/blob/master/dist/main.min.js>`_) file in your D
 .. code-block:: html+django
 
     {% load static %}
-    <script src="{% static 'django-tornado-websockets-client.js' %}"></script>
+    <script src="{% static 'tornado_websockets/client.js' %}"></script>
 
 Create a WebSocket connection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -250,4 +250,3 @@ Send an event to the server
 
         ws.emit('my_event', {my: 'data'}); // will send {my: 'data}
     });
-

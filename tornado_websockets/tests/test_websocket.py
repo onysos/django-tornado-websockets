@@ -2,29 +2,25 @@
 
 from __future__ import absolute_import, division, print_function, with_statement
 
-# I just took the official websocket test file from Tornado
-# https://github.com/tornadoweb/tornado/blob/master/tornado/test/websocket_test.py
-# and modify it for my project.
 import os
+import pprint
+import time
 import traceback
 
-import time
-import pprint
-
 from tornado.concurrent import Future
-from tornado import gen
 from tornado.escape import json_encode, json_decode
 from tornado.httpclient import HTTPError
-from tornado.testing import AsyncHTTPTestCase, gen_test
+from tornado.testing import gen_test
 from tornado.web import Application
 
 from tornado_websockets.exceptions import *
+from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
+from tornado_websockets.tests.app_reserved_events import app_reserved_events_ws
+from tornado_websockets.tests.app_test import app_test_ws
+from tornado_websockets.tests.helpers import WebSocketBaseTestCase, TestWebSocketHandler
 from tornado_websockets.tornadowrapper import TornadoWrapper
 from tornado_websockets.websocket import WebSocket
 from tornado_websockets.websockethandler import WebSocketHandler
-from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
-from tornado_websockets.tests.app_test import app_test_ws
-from tornado_websockets.tests.app_reserved_events import app_reserved_events_ws
 
 try:
     import tornado.websocket  # noqa
@@ -37,13 +33,6 @@ except ImportError:
     traceback.print_exc()
     raise
 
-from tornado.websocket import websocket_connect
-
-try:
-    from tornado import speedups
-except ImportError:
-    speedups = None
-
 # For Travis
 if os.environ.get('TRAVIS') is None:
     SLEEPING_TIME = 0
@@ -51,48 +40,6 @@ else:
     SLEEPING_TIME = 1
 
 pp = pprint.PrettyPrinter(indent=4)
-
-
-class TestWebSocketHandler(WebSocketHandler):
-    """Base class for testing handlers that exposes the on_close event.
-    This allows for deterministic cleanup of the associated socket.
-    """
-
-    def initialize(self, websocket, close_future, compression_options=None):
-        super(TestWebSocketHandler, self).initialize(websocket)
-        self.close_future = close_future
-        self.compression_options = compression_options
-
-    def get_compression_options(self):
-        return self.compression_options
-
-    def on_close(self):
-        self.close_future.set_result((self.close_code, self.close_reason))
-
-
-class EchoHandler(TestWebSocketHandler):
-    def on_message(self, message):
-        self.write_message(message, isinstance(message, bytes))
-
-
-class WebSocketBaseTestCase(AsyncHTTPTestCase):
-    @gen.coroutine
-    def ws_connect(self, path, compression_options=None):
-        ws = yield websocket_connect(
-            'ws://127.0.0.1:%d%s' % (self.get_http_port(), path),
-            compression_options=compression_options
-        )
-
-        raise gen.Return(ws)
-
-    @gen.coroutine
-    def close(self, ws):
-        """Close a websocket connection and wait for the server side.
-        If we don't wait here, there are sometimes leak warnings in the
-        tests.
-        """
-        ws.close()
-        yield self.close_future
 
 
 # --- HERE BEGIN REAL TESTS ---------------------------------------------------------------------------------------- #

@@ -28,9 +28,10 @@ Python  Django
 Documentation
 -------------
 
-Documentation is available on readthedocs:
+Documentation is available on Read the Docs:
 
 - Stable: http://django-tornado-websockets.readthedocs.io/en/stable/
 - Latest: http://django-tornado-websockets.readthedocs.io/en/latest/
 - Develop: http://django-tornado-websockets.readthedocs.io/en/develop/
 
+But also on my own server: http://docs.kocal.fr/django-tornado-websockets/
