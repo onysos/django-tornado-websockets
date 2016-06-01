@@ -1,6 +1,6 @@
 [submodule "tornado_websockets/static/tornado_websockets/client"]
 	path = tornado_websockets/static/tornado_websockets/client
-	url = https://github.com/Kocal/django-tornado-websockets-client.git
+	url = https://github.com/Kocal/dtws-client.git
 [submodule "tornado_websockets/static/tornado_websockets/modules/progressbar"]
 	path = tornado_websockets/static/tornado_websockets/modules/progressbar
-	url = https://github.com/Kocal/django-tornado-websockets-module-progressbar.git
+	url = https://github.com/Kocal/dtws-client-module-progressbar.git

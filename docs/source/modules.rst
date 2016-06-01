@@ -36,9 +36,7 @@ Provide an interface to easily handle a progress bar on both server and client s
     Client-side
     '''''''''''
 
-    .. code-block:: javascript
-
-        // Soon
+    Read client-side documentation on `<https://docs.kocal.fr/dtws-client-module-progressbar>`_.
 
     Usage
     ^^^^^

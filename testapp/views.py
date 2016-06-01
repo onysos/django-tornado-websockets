@@ -93,12 +93,28 @@ class MyProgressBar(TemplateView):
     @ws_pb.on
     def go(self, socket):
         ws_pb.reset()
-        self.start_thread()
+        start_thread(ws_pb)
 
-    def start_thread(self):
-        def my_function():
-            for value in range(0, ws_pb.max):
-                time.sleep(.1)
-                ws_pb.tick(label="[%d/%d] Tâche %d terminée" % (ws_pb.value, ws_pb.max, value))
 
-        threading.Thread(None, my_function, None).start()
+def start_thread(ws_pb):
+    def my_function():
+        for value in range(0, ws_pb.max):
+            time.sleep(.1)
+            ws_pb.tick(label="[%d/%d] Tâche %d terminée" % (ws_pb.value + 1, ws_pb.max, value))
+
+    ws_pb.reset()
+    threading.Thread(None, my_function, None).start()
+
+
+# Multiple instances for client-side of progress bar module... xd
+for i in range(0, 30):
+    cc = '''
+ws_pbs%d = ProgressBar('my_progress_bar/%d', max=50)
+#ws_pbs%d = ProgressBar('my_progress_bar/%d', max=i%%2 * 50)
+
+@ws_pbs%d.on
+def start():
+    start_thread(ws_pbs%d)
+''' % (i, i, i, i, i, i)
+
+    exec(cc)
