@@ -35,7 +35,7 @@ class Command(BaseCommand, AppConfig):
         self.default_port = 8000
 
     def add_arguments(self, parser):
-        parser.add_argument('port', nargs='?', help='Optional port number')
+        parser.add_argument('port', nargs='?', help='Optional port number', type=int)
         parser.add_argument(
             '--test-mode',
             action='store_true',
