@@ -63,7 +63,7 @@ author = 'Hugo ALLIAUME'
 # built documents.
 #
 # The short X.Y version.
-version = '0.0'
+version = '1.1'
 # The full version, including alpha/beta/rc tags.
 release = tornado_websockets.__version__
 
