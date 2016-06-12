@@ -14,12 +14,13 @@ setup(
     long_description=README,
     author='Hugo ALLIAUME',
     author_email='kocal@live.fr',
-    packages=['tornado_websockets'],
     install_requires=[
         'Django>=1.8',
         'tornado>=4.3',
         'six>=1.10',
     ],
+    package_dir = {'': 'tornado_websockets'},
+    packages = find_packages('tornado_websockets', exclude=['node_modules']),
     include_package_data=True,
     license='GPLv3 License',
     classifiers=[
