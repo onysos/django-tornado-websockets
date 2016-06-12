@@ -19,8 +19,7 @@ setup(
         'tornado>=4.3',
         'six>=1.10',
     ],
-    package_dir = {'': 'tornado_websockets'},
-    packages = find_packages('tornado_websockets', exclude=['node_modules']),
+    packages = find_packages(exclude=['node_modules', 'bower_components', '.idea']),
     include_package_data=True,
     license='GPLv3 License',
     classifiers=[
