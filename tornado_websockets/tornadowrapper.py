@@ -97,14 +97,6 @@ class TornadoWrapper:
         tornado.ioloop.IOLoop.instance().start()
 
     @classmethod
-    def reset(cls):
-        tornado.ioloop.IOLoop.instance().stop()
-        cls.tornado_app = None
-        cls.tornado_server = None
-        cls.handlers = []
-        cls.tornado_port = 8000
-
-    @classmethod
     def add_handlers(cls, handlers):
         """
             Add an handler to Tornado app if it's defined, otherwise it add this handler to the

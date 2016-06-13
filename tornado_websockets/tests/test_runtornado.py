@@ -8,8 +8,8 @@ django.setup()
 
 from django.core.management import call_command
 from django.conf import settings
-from tornado_websockets.management.commands.runtornado import ReturnValueForTestMode, TornadoWrapper
-
+from tornado_websockets.management.commands.runtornado import ReturnValueForTestMode
+from tornado_websockets.tests.test_tornadowrapper import TornadoWrapper_reset
 
 class RunTornadoTest(unittest.TestCase):
     def setUp(self):
@@ -18,7 +18,7 @@ class RunTornadoTest(unittest.TestCase):
         except AttributeError:
             pass
 
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
 
     def test_with_no_configuration(self):
         with self.assertRaises(ReturnValueForTestMode) as e:

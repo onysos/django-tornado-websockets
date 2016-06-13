@@ -18,6 +18,7 @@ from tornado_websockets.tests.app_counter import app_counter, app_counter_ws
 from tornado_websockets.tests.app_reserved_events import app_reserved_events_ws
 from tornado_websockets.tests.app_test import app_test_ws
 from tornado_websockets.tests.helpers import WebSocketBaseTestCase, TestWebSocketHandler
+from tornado_websockets.tests.test_tornadowrapper import TornadoWrapper_reset
 from tornado_websockets.tornadowrapper import TornadoWrapper
 from tornado_websockets.websocket import WebSocket
 from tornado_websockets.websockethandler import WebSocketHandler
@@ -90,7 +91,7 @@ class WebSocketTest(WebSocketBaseTestCase):
 
     @gen_test
     def test_add_to_tornado_handlers(self):
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         self.assertListEqual(TornadoWrapper.handlers, [])
 
         ws = WebSocket('/my_ws')
@@ -100,7 +101,7 @@ class WebSocketTest(WebSocketBaseTestCase):
 
     @gen_test
     def test_not_add_to_handlers(self):
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         self.assertListEqual(TornadoWrapper.handlers, [])
 
         ws = WebSocket('/my_ws', False)

@@ -1,10 +1,11 @@
 # coding: utf-8
 
 import pprint
+import re
 import unittest
 
-import re
 import tornado.httpserver
+import tornado.ioloop
 import tornado.web
 
 from tornado_websockets.tornadowrapper import TornadoWrapper
@@ -12,9 +13,17 @@ from tornado_websockets.tornadowrapper import TornadoWrapper
 pp = pprint.PrettyPrinter(indent=4)
 
 
+def TornadoWrapper_reset():
+    tornado.ioloop.IOLoop.instance().stop()
+    TornadoWrapper.tornado_app = None
+    TornadoWrapper.tornado_server = None
+    TornadoWrapper.handlers = []
+    TornadoWrapper.tornado_port = 8000
+
+
 class TestTornadoWrapper(unittest.TestCase):
     def test_reset(self):
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         self.assertIsNone(TornadoWrapper.tornado_app)
         self.assertIsNone(TornadoWrapper.tornado_server)
         self.assertListEqual(TornadoWrapper.handlers, [])
@@ -39,7 +48,7 @@ class TestTornadoWrapper(unittest.TestCase):
         self.assertIsInstance(TornadoWrapper.tornado_app, tornado.web.Application)
 
     def test_listen_with_invalid_parameter_port(self):
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
 
         with self.assertRaises(TypeError) as e:
             TornadoWrapper.listen('not an integer')
@@ -68,7 +77,7 @@ class TestTornadoWrapper(unittest.TestCase):
         TornadoWrapper.start_app()
         TornadoWrapper.listen(8000)
         TornadoWrapper.loop()
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
 
     def test_add_handlers_with_invalid_parameter_handlers(self):
         with self.assertRaises(TypeError) as e:
@@ -80,7 +89,7 @@ class TestTornadoWrapper(unittest.TestCase):
         class MyHandler(tornado.web.RequestHandler):
             pass
 
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         TornadoWrapper.add_handlers(
             ('.*', MyHandler)
         )
@@ -95,7 +104,7 @@ class TestTornadoWrapper(unittest.TestCase):
         class MySecondHandler(tornado.web.RequestHandler):
             pass
 
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         TornadoWrapper.add_handlers([
             ('/handler/first', MyFirstHandler),
             ('/handler/second', MySecondHandler)
@@ -111,7 +120,7 @@ class TestTornadoWrapper(unittest.TestCase):
         class MyHandler(tornado.web.RequestHandler):
             pass
 
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         TornadoWrapper.start_app()
         TornadoWrapper.listen(11111)
         TornadoWrapper.loop()
@@ -134,7 +143,7 @@ class TestTornadoWrapper(unittest.TestCase):
         class MySecondHandler(tornado.web.RequestHandler):
             pass
 
-        TornadoWrapper.reset()
+        TornadoWrapper_reset()
         TornadoWrapper.start_app()
         TornadoWrapper.listen(22222)
         TornadoWrapper.loop()
