@@ -8,7 +8,6 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-
 from six import integer_types
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -26,7 +25,7 @@ class TornadoWrapper:
     tornado_server = None
 
     # Default values for user configuration
-    tornado_port = 8000
+    tornado_port = 0  # will never be 0
     handlers = []
 
     @classmethod

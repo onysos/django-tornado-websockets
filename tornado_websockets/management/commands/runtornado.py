@@ -30,8 +30,6 @@ class Command(BaseCommand, AppConfig):
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
-        self.django = tornado.wsgi.WSGIContainer(django.core.handlers.wsgi.WSGIHandler())
-
         self.default_port = 8000
 
     def add_arguments(self, parser):
